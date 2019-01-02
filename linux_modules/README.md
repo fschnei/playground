@@ -6,24 +6,24 @@ My machine: Ubuntu 18.10 in virtual box 6.0
 
 setup: 
 
-sudo apt-get install build-essential libelf-dev
+`sudo apt-get install build-essential libelf-dev`
 
 
 
 build module:
-make modules
+`make modules`
 
 load own module:
-sudo insmod hello_mod.ko
+`sudo insmod hello_mod.ko`
 
 check if load was successfully:
-lsmod
+`lsmod`
 
 check kernel log:
-dmesg
+`dmesg`
 
 unload own module:
-sudo rmmod hello_mod
+`sudo rmmod hello_mod`
 
 check kernel log:
-`<dmesg>`
+`dmesg`
