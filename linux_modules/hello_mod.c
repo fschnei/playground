@@ -39,12 +39,16 @@ static struct cdev* sample_cdev;
 static int __init sample_cdev_init(void) {
 
     int result;
-    int minorNumberCount = 5;
+    const int firstMinorNumber = 5;
+    const int minorNumberCount = 1;
 
     printk(KERN_DEBUG "sample char device init\n");
 
+    printk ("minorNumberCount is %d\n", minorNumberCount);
+
     // get major and minor numbers dynamically
-    result = alloc_chrdev_region(&sample_dev_t, 2, minorNumberCount, "sampleCharDeviceName");
+    // sample_dev_t is a number which holds the major and the first minor number (32 Bit value)
+    result = alloc_chrdev_region(&sample_dev_t, firstMinorNumber, minorNumberCount, "sampleCharDeviceName");
     if(result < 0) {
 	printk(KERN_ERR "failed to alloc chrdev region\n");
 	goto fail_alloc_chrdev_region;
@@ -52,24 +56,39 @@ static int __init sample_cdev_init(void) {
     printk ("The sample_dev_t number for your device is %d\n", sample_dev_t);
     printk ("The major number for your device is %d\n", MAJOR(sample_dev_t));
     printk ("The minor number for your device is %d\n", MINOR(sample_dev_t));
+
+    // cdev is a structure (defined in linux/cdev.h) which represent the device with read, write, ... function pointers
     sample_cdev = cdev_alloc();
     if(!sample_cdev) {
 	result = -ENOMEM;
 	printk(KERN_ERR "failed to alloc cdev\n");
 	goto fail_alloc_cdev;
     }
+    // now the cdev struct is undefined -> init it
+
+    // the following has to be done for every cdev device (every minor number)
+    // init my cdev object (also add pointer to my fileOperationsStruct)
     cdev_init(sample_cdev, &sample_cdev_fops);
-    result = cdev_add(sample_cdev, sample_dev_t, 1);
+    // concat the collected major number and minor numbers (eventually with for loop) with the allocated character device
+    result = cdev_add(sample_cdev, MKDEV(MAJOR(sample_dev_t), MINOR(sample_dev_t)), 1);
     if(result < 0) {
 	printk(KERN_ERR "failed to add cdev\n");
 	goto fail_add_cdev;
     }
+
+    // check if init was successfully
+    printk ("sample_cdev->count is %d\n", sample_cdev->count);
+    printk ("sample_cdev->dev is %d\n", sample_cdev->dev);
+    printk ("sample_cdev->dev is %d\n", sample_cdev->dev);
+
+    // create virtual device
     sample_class = class_create(THIS_MODULE, "sample");
     if(!sample_class) {
 	result = -EEXIST;
 	printk(KERN_ERR "failed to create class\n");
 	goto fail_create_class;
     }
+    // create a device in /dev and register the virtual device from class_create
     if(!device_create(sample_class, NULL, sample_dev_t, NULL, "sample_cdev%d", MINOR(sample_dev_t))) {
 	result = -EINVAL;
 	printk(KERN_ERR "failed to create device\n");
