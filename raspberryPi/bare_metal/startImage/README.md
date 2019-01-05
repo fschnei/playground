@@ -15,3 +15,12 @@ My adapter is segger j-link.
 bootcode.bin, start.elf : boot files for gpu
 config.txt : file to tell the gpu how to start the cpu
 kernel.img: memory shadow which ist loaded into ram (gpu does this)
+
+
+links:
+http://kariddi.blogspot.com/2012/08/raspberry-pi-bare-metal-part-1-boot.html
+https://elinux.org/RPiconfig
+https://www.taylorpetrick.com/blog/post/bare-metal-pi-setup
+https://elinux.org/RPi_Hardware
+https://github.com/dwelch67/raspberrypi
+
