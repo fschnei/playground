@@ -52,3 +52,8 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# ignore hidden files and folders (starting with .)
+.*
+# except this gitignore file
+!/.gitignore
