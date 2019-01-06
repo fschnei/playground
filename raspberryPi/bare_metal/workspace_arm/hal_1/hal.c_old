@@ -1,0 +1,226 @@
+/*
+ * hal.h
+ *
+ *  Created on: 02.02.2018
+ *      Author: fasch019
+ */
+
+#include "rpi-gpio.h"
+#include "rpi2.h"
+
+// function switchs an defined LED (LED_index) to the new LED state (LED_state)
+// LED_state:
+//          0: LED off
+//          1: LED on
+// LED_index:
+//          0, 1, ..., 7
+// return value:
+//          0: ok
+//          0xFF: error (LED not available, LED port is no output)
+unsigned char hal_switchLED(unsigned char LED_index, unsigned char LED_state)
+{
+    rpi_gpio_pin_t Pin;
+    rpi_gpio_value_t Value;
+    
+    if (LED_state == 0)
+    {
+        Value = RPI_IO_HI;
+    }
+    else
+    {
+        Value = RPI_IO_LO;
+    }
+    
+    switch(LED_index)
+    {
+        case 0:
+            Pin = RPI_GPIO5;
+            RPI_SetGpioValue( Pin, Value );
+            break;
+        case 1:
+            Pin = RPI_GPIO6;
+            RPI_SetGpioValue( Pin, Value );
+            break;
+        case 2:
+            Pin = RPI_GPIO7;
+            RPI_SetGpioValue( Pin, Value );
+            break;
+        case 3:
+            Pin = RPI_GPIO8;
+            RPI_SetGpioValue( Pin, Value );
+            break;
+        case 4:
+            Pin = RPI_GPIO9;
+            RPI_SetGpioValue( Pin, Value );
+            break;
+        case 5:
+            Pin = RPI_GPIO10;
+            RPI_SetGpioValue( Pin, Value );
+            break;
+        case 6:
+            Pin = RPI_GPIO11;
+            RPI_SetGpioValue( Pin, Value );
+            break;
+        case 7:
+            Pin = RPI_GPIO12;
+            RPI_SetGpioValue( Pin, Value );
+            break;
+    }
+    
+    
+    //RPI_SetGpioValue( Pin, Value );
+    // TODO
+    return 0;
+}
+
+
+// function returns the current state of the given switch with Switch_index
+// Switch_index:
+//          0, 1, 2, 3
+// return value:
+//          0: switch is off
+//          1: switch is on
+//          0xFF: error (switch not available, switch port is no input)
+unsigned char hal_getSwitchState(unsigned char Switch_index)
+{
+    rpi_gpio_value_t Return;
+    rpi_gpio_pin_t Pin;
+    
+    Return = 0;
+    
+    switch (Switch_index)
+    {
+        case 0:
+            Pin = RPI_GPIO2;
+            Return = RPI_GetGpioValue( Pin );
+            break;
+        case 1:
+            Pin = RPI_GPIO3;
+            Return = RPI_GetGpioValue( Pin );
+            break;
+        case 2:
+            Pin = RPI_GPIO16;
+            Return = RPI_GetGpioValue( Pin );
+            break;
+        case 3:
+            Pin = RPI_GPIO17;
+            Return = RPI_GetGpioValue( Pin );
+            break;
+    }
+    
+    //Return = RPI_GetGpioValue( Pin );
+    
+    return (unsigned char)Return;
+}
+
+
+// function returns the current state of the given button with Button_index
+// Button_index:
+//          0, 1, 2, 3
+// return value:
+//          0: button is off
+//          1: button is on
+//          0xFF: error (button not available, button port is no input)
+unsigned char hal_getButtonState(unsigned char Button_index)
+{
+    rpi_gpio_value_t Return;
+    rpi_gpio_pin_t Pin;
+    
+    Return = 0;
+    
+    switch (Button_index)
+    {
+        case 0:
+            Pin = RPI_GPIO18;
+            Return = RPI_GetGpioValue( Pin );
+            break;
+        case 1:
+            Pin = RPI_GPIO19;
+            Return = RPI_GetGpioValue( Pin );
+            break;
+        case 2:
+            Pin = RPI_GPIO20;
+            Return = RPI_GetGpioValue( Pin );
+            break;
+        case 3:
+            Pin = RPI_GPIO21;
+            Return = RPI_GetGpioValue( Pin );
+            break;
+    }
+    
+    //Pin = 18 + Button_index;
+    
+    //Return = RPI_GetGpioValue( Pin );
+    
+    return (unsigned char)Return;
+}
+
+
+
+// function sets the direction of LED port, switch port and button port
+/*void hal_init_system(void)
+{
+	// Pegel von GPIO5 auf Null setzen
+	*GPCLR0 = (1<<5);
+	// GPIO 5 als Ausgang schalten
+	*GPFSEL0 &= ~(GPIOFSEL_CLR << FSEL5);
+	*GPFSEL0 |=	GPIOFSEL_OUT << FSEL5;
+
+
+
+
+}*/
+
+/*// function sets the direction of LED port, switch port and button port
+void hal_init_system(void)
+{
+    // init switches
+    // Switch 1
+    RPI_SetGpioInput( RPI_GPIO2 );
+    // Switch 2
+    RPI_SetGpioInput( RPI_GPIO3 );
+    // Switch 3
+    RPI_SetGpioInput( RPI_GPIO16 );
+    // Switch 4
+    RPI_SetGpioInput( RPI_GPIO17 );
+    
+    // init buttons
+    // button 1
+    RPI_SetGpioInput( RPI_GPIO18 );
+    // button 2
+    RPI_SetGpioInput( RPI_GPIO19 );
+    // button 3
+    RPI_SetGpioInput( RPI_GPIO20 );
+    // button 4
+    RPI_SetGpioInput( RPI_GPIO21 );
+    
+    // init led
+    // led 1
+    RPI_SetGpioOutput( RPI_GPIO5 );
+    // led 2
+    RPI_SetGpioOutput( RPI_GPIO6 );
+    // led 3
+    RPI_SetGpioOutput( RPI_GPIO7 );
+    // led 4
+    RPI_SetGpioOutput( RPI_GPIO8 );
+    // led 5
+    RPI_SetGpioOutput( RPI_GPIO9 );
+    // led 6
+    RPI_SetGpioOutput( RPI_GPIO10 );
+    // led 7
+    RPI_SetGpioOutput( RPI_GPIO11 );
+    // led 8
+    RPI_SetGpioOutput( RPI_GPIO12 );
+}
+*/
+
+
+// this functions waits for circa! 1ms
+// the time depends on target board (not precise)
+void hal_wait_1ms(void)
+{
+    volatile int index;
+    index = 0;
+    for(index = 0; index < 300; index++);
+}
+
