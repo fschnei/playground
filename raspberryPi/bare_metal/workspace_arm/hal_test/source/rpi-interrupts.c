@@ -1,5 +1,5 @@
 
-#include "rpi-armtimer.h"
+//#include "rpi-armtimer.h"
 #include "rpi-base.h"
 #include "rpi-gpio.h"
 #include "rpi-interrupts.h"
@@ -109,13 +109,12 @@ void __attribute__((interrupt("ABORT"))) data_abort_vector(void)
 */
 void __attribute__((interrupt("IRQ"))) interrupt_vector(void)
 {
-    static int lit = 0;
-    static int ticks = 0;
-    static int seconds = 0;
+    //static int lit = 0;
+    //static int ticks = 0;
+    //static int seconds = 0;
 
     irqHandler();
 
-    RPI_GetArmTimer()->IRQClear = 1;
 
 
     // Clear the ARM Timer interrupt - it's the only interrupt we have

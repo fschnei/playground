@@ -4,9 +4,10 @@
 #include "rpi-armtimer.h"
 #include "rpi-gpio.h"
 #include "rpi-interrupts.h"
+#include "rpi_interrupts.h"
 #include "rpi-systimer.h"
 
-extern void outbyte( char b );
+
 
 /** Main function - we'll never return from here */
 void application_main( unsigned int r0, unsigned int r1, unsigned int atags )
@@ -20,6 +21,8 @@ void application_main( unsigned int r0, unsigned int r1, unsigned int atags )
 
     /* Initialise the UART */
     RPI_AuxMiniUartInit( 9600, 8 );
+
+    irq_init();
 
     /* Enable the timer interrupt IRQ */
     RPI_GetIrqController()->Enable_Basic_IRQs = RPI_BASIC_ARM_TIMER_IRQ;

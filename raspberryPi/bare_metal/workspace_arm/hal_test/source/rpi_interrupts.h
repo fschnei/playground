@@ -47,7 +47,7 @@
 #define BCM2835_IRQ_ID_MAILBOX_0	65
 #define BCM2835_IRQ_ID_DOORBELL_0 	66
 #define BCM2835_IRQ_ID_DOORBELL_1 	67
-#define BCM2835_IRQ_ID_GPU0_HALTED 68
+#define BCM2835_IRQ_ID_GPU0_HALTED	68
 
 
 
@@ -63,11 +63,16 @@ typedef struct {
 	void 				   *pParam;				///< A special parameter that the use can pass to the IRQ.
 } INTERRUPT_VECTOR;
 
+
+void irq_init(void);
+
+void irqHandler (void);
+
 void irqRegister	(const unsigned int irq, FN_INTERRUPT_HANDLER pfnHandler, void *pParam);
 void irqEnable		(const unsigned int irq);
 void irqDisable		(const unsigned int irq);
 void irqBlock		(void);
-void irqUnblock	(void);
+void irqUnblock		(void);
 
 
 

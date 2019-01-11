@@ -10,6 +10,10 @@
 #include "rpi_interrupts.h"
 //#include "bcm2835_intc.h"
 
+#include "rpi-armtimer.h"
+#include "rpi-aux.h"
+
+
 static INTERRUPT_VECTOR g_VectorTable[BCM2835_INTC_TOTAL_IRQ];
 
 
@@ -34,6 +38,24 @@ static unsigned long enabled[3];
 
 
 
+//typedef void (*FN_INTERRUPT_HANDLER) (unsigned int irq, void *pParam);
+
+void Timer_ISR_function(unsigned int irq, void *pParam)
+{
+    RPI_GetArmTimer()->IRQClear = 1;
+    RPI_AuxMiniUartWrite( 'A' );
+}
+
+void irq_init(void)
+{
+	// register isr
+
+	irqEnable(BCM2835_IRQ_ID_TIMER_0);
+
+	// void irqRegister (const unsigned int irq, FN_INTERRUPT_HANDLER pfnHandler, void *pParam)
+	irqRegister (BCM2835_IRQ_ID_TIMER_0, Timer_ISR_function, 0);
+
+}
 
 
 
@@ -45,7 +67,7 @@ static void handleRange (unsigned long pending, const unsigned int base)
 	while (pending)
 	{
 		// Get index of first set bit:
-		unsigned int bit = 31 - __builtin_clz(pending);
+		unsigned int bit = 31 - __builtin_clz(pending);	// count leading zeros
 
 		// Map to IRQ number:
 		unsigned int irq = base + bit;
@@ -68,7 +90,7 @@ void irqHandler (void)
 {
 	register unsigned long ulMaskedStatus = pRegs->IRQBasic;
 
-	outbyte( 'A' );
+	//Timer_ISR_function(0, 0);
 
 	// Bit 8 in IRQBasic indicates interrupts in Pending1 (interrupts 31-0):
 	if (ulMaskedStatus & (1UL << 8))
