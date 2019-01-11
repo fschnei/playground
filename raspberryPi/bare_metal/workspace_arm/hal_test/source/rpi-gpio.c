@@ -3,6 +3,11 @@
 
 static rpi_gpio_t* rpiGpio = (rpi_gpio_t*)RPI_GPIO_BASE;
 
+// ( PERIPHERAL_BASE + 0x200000UL )
+//volatile BCM2835_GPIO_REGS * const pRegs = (BCM2835_GPIO_REGS *) (0x20200000);
+volatile BCM2835_GPIO_REGS * const pRegs_ = (BCM2835_GPIO_REGS *) (0x3F200000);
+
+
 
 rpi_gpio_t* RPI_GetGpio(void)
 {
@@ -119,7 +124,71 @@ void RPI_SetGpioValue( rpi_gpio_pin_t gpio, rpi_gpio_value_t value )
 
 
 
+void EnableGpioDetect(unsigned int pinNum, enum DETECT_TYPE type)
+{
+	unsigned long mask=(1<<pinNum);
+	unsigned long offset=pinNum/32;
 
+	switch(type) {
+	case DETECT_RISING:
+		pRegs_->GPREN[offset]|=mask;
+		break;
+	case DETECT_FALLING:
+		pRegs_->GPFEN[offset]|=mask;
+		break;
+	case DETECT_HIGH:
+		pRegs_->GPHEN[offset]|=mask;
+		break;
+	case DETECT_LOW:
+		pRegs_->GPLEN[offset]|=mask;
+		break;
+	case DETECT_RISING_ASYNC:
+		pRegs_->GPAREN[offset]|=mask;
+		break;
+	case DETECT_FALLING_ASYNC:
+		pRegs_->GPAFEN[offset]|=mask;
+		break;
+	case DETECT_NONE:
+		break;
+	}
+}
+
+void DisableGpioDetect(unsigned int pinNum, enum DETECT_TYPE type)
+{
+	unsigned long mask=~(1<<(pinNum%32));
+	unsigned long offset=pinNum/32;
+
+	switch(type) {
+	case DETECT_RISING:
+		pRegs_->GPREN[offset]&=mask;
+		break;
+	case DETECT_FALLING:
+		pRegs_->GPFEN[offset]&=mask;
+		break;
+	case DETECT_HIGH:
+		pRegs_->GPHEN[offset]&=mask;
+		break;
+	case DETECT_LOW:
+		pRegs_->GPLEN[offset]&=mask;
+		break;
+	case DETECT_RISING_ASYNC:
+		pRegs_->GPAREN[offset]&=mask;
+		break;
+	case DETECT_FALLING_ASYNC:
+		pRegs_->GPAFEN[offset]&=mask;
+		break;
+	case DETECT_NONE:
+		break;
+	}
+}
+
+void ClearGpioInterrupt(unsigned int pinNum)
+{
+	unsigned long mask=(1<<(pinNum%32));
+	unsigned long offset=pinNum/32;
+
+	pRegs_->GPEDS[offset]=mask;
+}
 
 
 

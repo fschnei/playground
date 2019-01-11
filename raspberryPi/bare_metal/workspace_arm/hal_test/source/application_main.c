@@ -47,7 +47,7 @@ void application_main( unsigned int r0, unsigned int r1, unsigned int atags )
     	//RPI_SetGpioHi( RPI_GPIO5 );
     	RPI_WaitMicroSeconds( 1000000 );
 
-    	outbyte( 'A' );
+    	//outbyte( 'A' );
     	//outbyte( 'B' );
     	//outbyte( 'C' );
     	//outbyte( 'D' );

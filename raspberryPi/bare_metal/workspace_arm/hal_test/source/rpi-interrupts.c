@@ -4,6 +4,10 @@
 #include "rpi-gpio.h"
 #include "rpi-interrupts.h"
 
+#include "rpi_interrupts.h"
+
+
+
 /** @brief The BCM2835/6 Interupt controller peripheral at it's base address */
 static rpi_irq_controller_t* rpiIRQController =
         (rpi_irq_controller_t*)RPI_INTERRUPT_CONTROLLER_BASE;
@@ -109,17 +113,22 @@ void __attribute__((interrupt("IRQ"))) interrupt_vector(void)
     static int ticks = 0;
     static int seconds = 0;
 
-    /* Clear the ARM Timer interrupt - it's the only interrupt we have
-       enabled, so we want don't have to work out which interrupt source
-       caused us to interrupt */
+    irqHandler();
+
     RPI_GetArmTimer()->IRQClear = 1;
+
+
+    // Clear the ARM Timer interrupt - it's the only interrupt we have
+    //   enabled, so we want don't have to work out which interrupt source
+    //   caused us to interrupt
+    /*RPI_GetArmTimer()->IRQClear = 1;
 
     ticks++;
     if( ticks > 1 )
     {
         ticks = 0;
 
-        /* Calculate the FPS once a minute */
+        // Calculate the FPS once a minute /
         seconds++;
         if( seconds > 59 )
         {
@@ -127,7 +136,7 @@ void __attribute__((interrupt("IRQ"))) interrupt_vector(void)
         }
     }
 
-    /* Flip the LED */
+    // Flip the LED /
     if( lit )
     {
         LED_OFF();
@@ -139,7 +148,7 @@ void __attribute__((interrupt("IRQ"))) interrupt_vector(void)
         LED_ON();
     	RPI_SetGpioHi( RPI_GPIO5 );
         lit = 1;
-    }
+    }*/
 }
 
 
