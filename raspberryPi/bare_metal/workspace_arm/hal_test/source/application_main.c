@@ -6,7 +6,7 @@
 #include "rpi-interrupts.h"
 #include "rpi-systimer.h"
 
-
+extern void outbyte( char b );
 
 /** Main function - we'll never return from here */
 void application_main( unsigned int r0, unsigned int r1, unsigned int atags )
@@ -17,7 +17,9 @@ void application_main( unsigned int r0, unsigned int r1, unsigned int atags )
 
 	//extern void RPI_SetGpioOutput( rpi_gpio_pin_t gpio );
 	RPI_SetGpioOutput( RPI_GPIO5 );
-	
+
+    /* Initialise the UART */
+    RPI_AuxMiniUartInit( 9600, 8 );
 
     /* Enable the timer interrupt IRQ */
     RPI_GetIrqController()->Enable_Basic_IRQs = RPI_BASIC_ARM_TIMER_IRQ;
@@ -40,9 +42,15 @@ void application_main( unsigned int r0, unsigned int r1, unsigned int atags )
     {
     	//LED_ON();
     	//RPI_SetGpioLo( RPI_GPIO5 );
-    	RPI_WaitMicroSeconds( 1000000 );
+    	//RPI_WaitMicroSeconds( 1000000 );
     	//LED_OFF();
     	//RPI_SetGpioHi( RPI_GPIO5 );
     	RPI_WaitMicroSeconds( 1000000 );
+
+    	outbyte( 'A' );
+    	//outbyte( 'B' );
+    	//outbyte( 'C' );
+    	//outbyte( 'D' );
+    	//outbyte( 'E' );
     }
 }

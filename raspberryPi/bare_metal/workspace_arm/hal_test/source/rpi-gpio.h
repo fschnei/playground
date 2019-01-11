@@ -183,8 +183,10 @@ extern void RPI_SetGpioValue( rpi_gpio_pin_t gpio, rpi_gpio_value_t value );
 extern void RPI_ToggleGpio( rpi_gpio_pin_t gpio );
 
 // TODO: see p. 96 ff. https://www.raspberrypi.org/app/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
-extern void RPI_Gpio_ActivateRisingInterrupt( rpi_gpio_pin_t gpio );
-extern void RPI_Gpio_ActivateFallingInterrupt( rpi_gpio_pin_t gpio );
+/* Interrupt related functions */
+//void EnableGpioDetect	(unsigned int pinNum, enum DETECT_TYPE type);
+//void DisableGpioDetect	(unsigned int pinNum, enum DETECT_TYPE type);
+//void ClearGpioInterrupt	(unsigned int pinNum);
 
 
 #endif

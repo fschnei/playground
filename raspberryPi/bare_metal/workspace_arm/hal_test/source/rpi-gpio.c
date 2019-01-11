@@ -112,3 +112,14 @@ void RPI_SetGpioValue( rpi_gpio_pin_t gpio, rpi_gpio_value_t value )
     else if( ( value == RPI_IO_HI ) || ( value == RPI_IO_ON ) )
         RPI_SetGpioHi( gpio );
 }
+
+
+
+
+
+
+
+
+
+
+
