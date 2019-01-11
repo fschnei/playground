@@ -2,7 +2,7 @@
 #ifndef RPI_AUX_H
 #define RPI_AUX_H
 
-#include "rpi-base.h"
+#include "../rpi-base.h"
 
 /* Although these values were originally from the BCM2835 Arm peripherals PDF
    it's clear that was rushed and has some glaring errors - so these values

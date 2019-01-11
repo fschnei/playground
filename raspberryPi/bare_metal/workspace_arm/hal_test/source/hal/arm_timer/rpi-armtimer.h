@@ -2,9 +2,9 @@
 #ifndef RPI_ARMTIMER_H
 #define RPI_ARMTIMER_H
 
-#include "int_types.h"
+#include "../../int_types.h"
 
-#include "rpi-base.h"
+#include "../rpi-base.h"
 
 /** @brief See the documentation for the ARM side timer (Section 14 of the
     BCM2835 Peripherals PDF) */

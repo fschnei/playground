@@ -2,8 +2,8 @@
 #ifndef RPI_SYSTIMER_H
 #define RPI_SYSTIMER_H
 
-#include "int_types.h"
-#include "rpi-base.h"
+#include "../../int_types.h"
+#include "../rpi-base.h"
 
 #define RPI_SYSTIMER_BASE       ( PERIPHERAL_BASE + 0x3000 )
 

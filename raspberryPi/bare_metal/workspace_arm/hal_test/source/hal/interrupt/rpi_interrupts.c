@@ -8,10 +8,11 @@
 
 
 #include "rpi_interrupts.h"
+
+#include "../arm_timer/rpi-armtimer.h"
 //#include "bcm2835_intc.h"
 
-#include "rpi-armtimer.h"
-#include "rpi-aux.h"
+#include "../auxiliaries/rpi-aux.h"
 
 
 static INTERRUPT_VECTOR g_VectorTable[BCM2835_INTC_TOTAL_IRQ];
@@ -49,11 +50,11 @@ void Timer_ISR_function(unsigned int irq, void *pParam)
 void irq_init(void)
 {
 	// register isr
+	// void irqRegister (const unsigned int irq, FN_INTERRUPT_HANDLER pfnHandler, void *pParam)
+	irqRegister (BCM2835_IRQ_ID_TIMER_0, Timer_ISR_function, 0);
 
 	irqEnable(BCM2835_IRQ_ID_TIMER_0);
 
-	// void irqRegister (const unsigned int irq, FN_INTERRUPT_HANDLER pfnHandler, void *pParam)
-	irqRegister (BCM2835_IRQ_ID_TIMER_0, Timer_ISR_function, 0);
 
 }
 
@@ -103,6 +104,10 @@ void irqHandler (void)
 	// Bits 7 through 0 in IRQBasic represent interrupts 64-71:
 	if (ulMaskedStatus & 0xFF)
 		handleRange(ulMaskedStatus & 0xFF & enabled[2], 64);
+
+	// TODO: clear all remaining interrupt flags -> interrupt with not handler will not rise in series and block cpu
+	// debug: clear timer flag:
+    RPI_GetArmTimer()->IRQClear = 1;
 }
 
 void irqUnblock (void)

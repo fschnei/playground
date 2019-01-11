@@ -1,7 +1,7 @@
 
 //#include "rpi-armtimer.h"
-#include "rpi-base.h"
-#include "rpi-gpio.h"
+#include "../rpi-base.h"
+#include "../gpio/rpi-gpio.h"
 #include "rpi-interrupts.h"
 
 #include "rpi_interrupts.h"

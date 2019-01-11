@@ -1,11 +1,11 @@
 
 
-#include "rpi-aux.h"
-#include "rpi-armtimer.h"
-#include "rpi-gpio.h"
-#include "rpi-interrupts.h"
-#include "rpi_interrupts.h"
-#include "rpi-systimer.h"
+#include "hal/arm_timer/rpi-armtimer.h"
+#include "hal/auxiliaries/rpi-aux.h"
+#include "hal/gpio/rpi-gpio.h"
+#include "hal/interrupt/rpi-interrupts.h"
+#include "hal/interrupt/rpi_interrupts.h"
+#include "hal/sys_timer/rpi-systimer.h"
 
 
 

@@ -1,6 +1,6 @@
 
 
-#include "rpi-armtimer.h"
+#include "../arm_timer/rpi-armtimer.h"
 
 static rpi_arm_timer_t* rpiArmTimer = (rpi_arm_timer_t*)RPI_ARMTIMER_BASE;
 

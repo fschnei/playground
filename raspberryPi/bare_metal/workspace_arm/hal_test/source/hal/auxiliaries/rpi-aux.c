@@ -1,7 +1,7 @@
 
 #include "rpi-aux.h"
-#include "rpi-base.h"
-#include "rpi-gpio.h"
+#include "../rpi-base.h"
+#include "../gpio/rpi-gpio.h"
 
 static aux_t* auxillary = (aux_t*)AUX_BASE;
 
@@ -77,3 +77,14 @@ void RPI_AuxMiniUartWrite( char c )
     /* Write the character to the FIFO for transmission */
     auxillary->MU_IO = c;
 }
+
+int _write( int file, char *ptr, int len )
+{
+    int todo;
+
+    for( todo = 0; todo < len; todo++ )
+    	RPI_AuxMiniUartWrite(*ptr++);
+
+    return len;
+}
+

@@ -2,7 +2,7 @@
 #ifndef RPI_GPIO_H
 #define RPI_GPIO_H
 
-#include "rpi-base.h"
+#include "../rpi-base.h"
 
 /** The base address of the GPIO peripheral (ARM Physical Address) */
 #define RPI_GPIO_BASE       ( PERIPHERAL_BASE + 0x200000UL )

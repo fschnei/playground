@@ -2,7 +2,7 @@
 #ifndef RPI_BASE_H
 #define RPI_BASE_H
 
-#include "int_types.h"
+#include "../int_types.h"
 
 // see: https://www.raspberrypi.org/documentation/hardware/raspberrypi/peripheral_addresses.md
 #ifdef RPI2
