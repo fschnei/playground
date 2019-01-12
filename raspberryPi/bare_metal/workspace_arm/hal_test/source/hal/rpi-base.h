@@ -18,4 +18,14 @@ typedef volatile uint32_t rpi_reg_wo_t;
 typedef volatile uint64_t rpi_wreg_rw_t;
 typedef volatile const uint64_t rpi_wreg_ro_t;
 
+
+// volatile types
+
+typedef volatile uint32_t rpi_volatile_reg_t;
+
+
+// set clear helper macros
+#define REGISTER_SET 0xFFFFFFFFUL
+#define REGISTER_CLR 0x00000000UL
+
 #endif

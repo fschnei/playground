@@ -1,7 +1,7 @@
 
 #include "rpi-gpio.h"
 
-static rpi_gpio_t* rpiGpio = (rpi_gpio_t*)RPI_GPIO_BASE;
+//static rpi_gpio_t* rpiGpio = (rpi_gpio_t*)RPI_GPIO_BASE;
 
 // ( PERIPHERAL_BASE + 0x200000UL )
 //volatile BCM2835_GPIO_REGS * const pRegs = (BCM2835_GPIO_REGS *) (0x20200000);
@@ -9,15 +9,15 @@ volatile BCM2835_GPIO_REGS * const pRegs_ = (BCM2835_GPIO_REGS *) (0x3F200000);
 
 
 
-rpi_gpio_t* RPI_GetGpio(void)
+volatile BCM2835_GPIO_REGS* const RPI_GetGpio(void)
 {
-    return rpiGpio;
+    return pRegs_;
 }
 
 
 void RPI_SetGpioPinFunction( rpi_gpio_pin_t gpio, rpi_gpio_alt_function_t func )
 {
-    rpi_reg_rw_t* fsel_reg = &((rpi_reg_rw_t*)rpiGpio)[ gpio / 10 ];
+    rpi_reg_rw_t* fsel_reg = &((rpi_reg_rw_t*)pRegs_)[ gpio / 10 ];
     rpi_reg_rw_t fsel_copy = *fsel_reg;
     fsel_copy &= ~( FS_MASK << ( ( gpio % 10 ) * 3 ) );
     fsel_copy |= (func << ( ( gpio % 10 ) * 3 ) );
@@ -44,11 +44,11 @@ rpi_gpio_value_t RPI_GetGpioValue( rpi_gpio_pin_t gpio )
     switch( gpio / 32 )
     {
         case 0:
-            result = rpiGpio->GPLEV0 & ( 1 << gpio );
+            result = pRegs_->GPLEV[0] & ( 1 << gpio );
             break;
 
         case 1:
-            result = rpiGpio->GPLEV1 & ( 1 << ( gpio - 32 ) );
+            result = pRegs_->GPLEV[1] & ( 1 << ( gpio - 32 ) );
             break;
 
         default:
@@ -79,11 +79,11 @@ void RPI_SetGpioHi( rpi_gpio_pin_t gpio )
     switch( gpio / 32 )
     {
         case 0:
-            rpiGpio->GPSET0 = ( 1 << gpio );
+        	pRegs_->GPSET[0] = ( 1 << gpio );
             break;
 
         case 1:
-            rpiGpio->GPSET1 = ( 1 << ( gpio - 32 ) );
+        	pRegs_->GPSET[1] = ( 1 << ( gpio - 32 ) );
             break;
 
         default:
@@ -97,11 +97,11 @@ void RPI_SetGpioLo( rpi_gpio_pin_t gpio )
     switch( gpio / 32 )
     {
         case 0:
-            rpiGpio->GPCLR0 = ( 1 << gpio );
+        	pRegs_->GPCLR[0] = ( 1 << gpio );
             break;
 
         case 1:
-            rpiGpio->GPCLR1 = ( 1 << ( gpio - 32 ) );
+        	pRegs_->GPCLR[1] = ( 1 << ( gpio - 32 ) );
             break;
 
         default:

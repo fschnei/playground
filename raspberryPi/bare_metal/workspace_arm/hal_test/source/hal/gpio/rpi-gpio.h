@@ -13,16 +13,16 @@
     #define LED_GPSET       GPSET1
     #define LED_GPCLR       GPCLR1
     #define LED_GPIO_BIT    15
-    #define LED_ON()        do { RPI_GetGpio()->LED_GPCLR = ( 1 << LED_GPIO_BIT ); } while( 0 )
-    #define LED_OFF()       do { RPI_GetGpio()->LED_GPSET = ( 1 << LED_GPIO_BIT ); } while( 0 )
+    //#define LED_ON()        do { RPI_GetGpio()->LED_GPCLR = ( 1 << LED_GPIO_BIT ); } while( 0 )
+    //#define LED_OFF()       do { RPI_GetGpio()->LED_GPSET = ( 1 << LED_GPIO_BIT ); } while( 0 )
 #else
     #define LED_GPFSEL      GPFSEL1
     #define LED_GPFBIT      18
     #define LED_GPSET       GPSET0
     #define LED_GPCLR       GPCLR0
     #define LED_GPIO_BIT    16
-    #define LED_ON()        do { RPI_GetGpio()->LED_GPSET = ( 1 << LED_GPIO_BIT ); } while( 0 )
-    #define LED_OFF()       do { RPI_GetGpio()->LED_GPCLR = ( 1 << LED_GPIO_BIT ); } while( 0 )
+    //#define LED_ON()        do { RPI_GetGpio()->LED_GPSET = ( 1 << LED_GPIO_BIT ); } while( 0 )
+    //#define LED_OFF()       do { RPI_GetGpio()->LED_GPCLR = ( 1 << LED_GPIO_BIT ); } while( 0 )
 #endif
 
 typedef enum {
@@ -115,7 +115,7 @@ typedef enum {
 
     The Alternate function table also has the pull state (pull-up/pull-down)
     which is applied after a power down. */
-typedef struct {
+/*typedef struct {
     rpi_reg_rw_t    GPFSEL0;
     rpi_reg_rw_t    GPFSEL1;
     rpi_reg_rw_t    GPFSEL2;
@@ -157,7 +157,7 @@ typedef struct {
     rpi_reg_wo_t    GPPUDCLK0;
     rpi_reg_wo_t    GPPUDCLK1;
     rpi_reg_ro_t    Reserved11;
-    } rpi_gpio_t;
+    } rpi_gpio_t;*/
 
 typedef struct {
 	unsigned long	GPFSEL[6];	///< Function selection registers.
@@ -208,7 +208,7 @@ enum DETECT_TYPE {
 
 
 
-extern rpi_gpio_t* RPI_GetGpio(void);
+volatile BCM2835_GPIO_REGS * const RPI_GetGpio(void);
 
 extern void RPI_SetGpioPinFunction( rpi_gpio_pin_t gpio, rpi_gpio_alt_function_t func );
 extern void RPI_SetGpioOutput( rpi_gpio_pin_t gpio );
@@ -221,7 +221,7 @@ extern void RPI_SetGpioLo( rpi_gpio_pin_t gpio );
 extern void RPI_SetGpioValue( rpi_gpio_pin_t gpio, rpi_gpio_value_t value );
 extern void RPI_ToggleGpio( rpi_gpio_pin_t gpio );
 
-// TODO: see p. 96 ff. https://www.raspberrypi.org/app/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
+// see p. 96 ff. https://www.raspberrypi.org/app/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
 /* Interrupt related functions */
 void EnableGpioDetect	(unsigned int pinNum, enum DETECT_TYPE type);
 void DisableGpioDetect	(unsigned int pinNum, enum DETECT_TYPE type);

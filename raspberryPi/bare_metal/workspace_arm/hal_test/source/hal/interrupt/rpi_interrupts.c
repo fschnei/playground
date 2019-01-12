@@ -52,14 +52,16 @@ void Timer_ISR_function(unsigned int irq, void *pParam)
 
 void GPIO_ISR_function(unsigned int irq, void *pParam)
 {
-	unsigned int reg;
+	//unsigned int reg;
+	rpi_volatile_reg_t reg;
 	// check which is the source
 	//reg = GET32(RPI_GetGpio()->GPEDS0);
-	reg = RPI_GetGpio()->GPEDS0;
+	reg = RPI_GetGpio()->GPEDS[0];
 	//PUT32(RPI_GetGpio()->GPEDS0, 0x0000);
-	RPI_GetGpio()->GPEDS0 = 0xFFFF;
+	RPI_GetGpio()->GPEDS[0] = 0xFFFFFFFFUL;
 	//reg = GET32(RPI_GetGpio()->GPEDS0);
-	reg = RPI_GetGpio()->GPEDS0;
+	// test if cleared
+	reg = RPI_GetGpio()->GPEDS[0];
 }
 
 
@@ -70,7 +72,7 @@ void irq_init(void)
 	irqRegister (BCM2835_IRQ_ID_TIMER_0, Timer_ISR_function, 0, 0);
 	irqRegister (BCM2835_IRQ_ID_GPIO_0, GPIO_ISR_function, 0, 0);
 
-	irqEnable(BCM2835_IRQ_ID_TIMER_0);
+	//irqEnable(BCM2835_IRQ_ID_TIMER_0);
 
 	irqEnable(BCM2835_IRQ_ID_GPIO_0);
 
@@ -123,9 +125,17 @@ void irqHandler (void)
 	if (ulMaskedStatus & 0xFF)
 		handleRange(ulMaskedStatus & 0xFF & enabled[2], 64);
 
-	// TODO: clear all remaining interrupt flags -> interrupt with not handler will not rise in series and block cpu
+	// clear all remaining interrupt flags -> interrupt with no handler will not rise in series and block cpu
 	// debug: clear timer flag:
     RPI_GetArmTimer()->IRQClear = 1;
+    // gpio interrupts are clear by write a 1 to corresponding register (see p. 96)
+    // clear pending gpio bits 0 ... 31
+	RPI_GetGpio()->GPEDS[0] = 0xFFFFFFFFUL;
+    // clear pending gpio bits 32 ... 53
+	RPI_GetGpio()->GPEDS[1] = 0x001FFFFFUL;
+
+	// TODO: clear all other possibly occurring interrupts
+
 }
 
 void irqUnblock (void)

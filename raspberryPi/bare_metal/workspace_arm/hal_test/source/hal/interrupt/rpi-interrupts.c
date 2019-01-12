@@ -33,7 +33,7 @@ void __attribute__((interrupt("ABORT"))) reset_vector(void)
 {
     while( 1 )
     {
-        LED_ON();
+        //LED_ON();
     }
 }
 
@@ -48,7 +48,7 @@ void __attribute__((interrupt("UNDEF"))) undefined_instruction_vector(void)
     while( 1 )
     {
         /* Do Nothing! */
-        LED_ON();
+        //LED_ON();
     }
 }
 
@@ -64,7 +64,7 @@ void __attribute__((interrupt("SWI"))) software_interrupt_vector(void)
     while( 1 )
     {
         /* Do Nothing! */
-        LED_ON();
+        //LED_ON();
     }
 }
 
@@ -79,7 +79,7 @@ void __attribute__((interrupt("ABORT"))) prefetch_abort_vector(void)
 {
     while( 1 )
     {
-        LED_ON();
+        //LED_ON();
     }
 }
 
@@ -94,7 +94,7 @@ void __attribute__((interrupt("ABORT"))) data_abort_vector(void)
 {
     while( 1 )
     {
-        LED_ON();
+        //LED_ON();
     }
 }
 
