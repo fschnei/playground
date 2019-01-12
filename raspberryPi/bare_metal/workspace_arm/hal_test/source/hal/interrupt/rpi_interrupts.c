@@ -56,12 +56,12 @@ void GPIO_ISR_function(unsigned int irq, void *pParam)
 	rpi_volatile_reg_t reg;
 	// check which is the source
 	//reg = GET32(RPI_GetGpio()->GPEDS0);
-	reg = RPI_GetGpio()->GPEDS[0];
+	reg = hal_gpio_getBase()->GPEDS[0];
 	//PUT32(RPI_GetGpio()->GPEDS0, 0x0000);
-	RPI_GetGpio()->GPEDS[0] = 0xFFFFFFFFUL;
+	hal_gpio_getBase()->GPEDS[0] = 0xFFFFFFFFUL;
 	//reg = GET32(RPI_GetGpio()->GPEDS0);
 	// test if cleared
-	reg = RPI_GetGpio()->GPEDS[0];
+	reg = hal_gpio_getBase()->GPEDS[0];
 }
 
 
@@ -130,9 +130,9 @@ void irqHandler (void)
     RPI_GetArmTimer()->IRQClear = 1;
     // gpio interrupts are clear by write a 1 to corresponding register (see p. 96)
     // clear pending gpio bits 0 ... 31
-	RPI_GetGpio()->GPEDS[0] = 0xFFFFFFFFUL;
+    hal_gpio_getBase()->GPEDS[0] = 0xFFFFFFFFUL;
     // clear pending gpio bits 32 ... 53
-	RPI_GetGpio()->GPEDS[1] = 0x001FFFFFUL;
+    hal_gpio_getBase()->GPEDS[1] = 0x001FFFFFUL;
 
 	// TODO: clear all other possibly occurring interrupts
 

@@ -6,9 +6,9 @@
 
 // see: https://www.raspberrypi.org/documentation/hardware/raspberrypi/peripheral_addresses.md
 #ifdef RPI2
-    #define PERIPHERAL_BASE     0x3F000000UL
+    #define HAL_RPI_PERIPHERAL_BASE     0x3F000000UL
 #else
-    #define PERIPHERAL_BASE     0x20000000UL
+    #define HAL_RPI_PERIPHERAL_BASE     0x20000000UL
 #endif
 
 typedef volatile uint32_t rpi_reg_rw_t;

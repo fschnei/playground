@@ -10,7 +10,7 @@
    the elinux BCM2835 datasheet errata:
    http://elinux.org/BCM2835_datasheet_errata */
 
-#define AUX_BASE    ( PERIPHERAL_BASE + 0x215000 )
+#define AUX_BASE    ( HAL_RPI_PERIPHERAL_BASE + 0x215000 )
 
 #define AUX_ENA_MINIUART            ( 1 << 0 )
 #define AUX_ENA_SPI1                ( 1 << 1 )

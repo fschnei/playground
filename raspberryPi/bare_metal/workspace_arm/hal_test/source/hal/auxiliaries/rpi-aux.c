@@ -55,14 +55,14 @@ void RPI_AuxMiniUartInit( int baud, int bits )
 
      /* Setup GPIO 14 and 15 as alternative function 5 which is
         UART 1 TXD/RXD. These need to be set before enabling the UART */
-    RPI_SetGpioPinFunction( RPI_GPIO14, FS_ALT5 );
-    RPI_SetGpioPinFunction( RPI_GPIO15, FS_ALT5 );
+    hal_gpio_SetPinFunction( HAL_GPIO_PIN14, HAL_GPIO_FUNC_SEL_ALT5 );
+    hal_gpio_SetPinFunction( HAL_GPIO_PIN15, HAL_GPIO_FUNC_SEL_ALT5 );
 
-    RPI_GetGpio()->GPPUD[0] = 0;
+    hal_gpio_getBase()->GPPUD[0] = 0;
     for( i=0; i<150; i++ ) { }
-    RPI_GetGpio()->GPPUDCLK[0] = ( 1 << 14 );
+    hal_gpio_getBase()->GPPUDCLK[0] = ( 1 << 14 );
     for( i=0; i<150; i++ ) { }
-    RPI_GetGpio()->GPPUDCLK[0] = 0;
+    hal_gpio_getBase()->GPPUDCLK[0] = 0;
 
     /* Disable flow control,enable transmitter and receiver! */
     auxillary->MU_CNTL = AUX_MUCNTL_TX_ENABLE;

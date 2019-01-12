@@ -15,7 +15,7 @@ void hal_init(void)
 	//RPI_GetGpio()->LED_GPFSEL |= LED_GPFBIT;
 
 	//extern void RPI_SetGpioOutput( rpi_gpio_pin_t gpio );
-	RPI_SetGpioInput( RPI_GPIO5 );
+	hal_gpio_SetInput( HAL_GPIO_PIN5 );
 
 	// Initialise the UART
 	RPI_AuxMiniUartInit( 9600, 8 );
@@ -38,7 +38,7 @@ void hal_init(void)
 
 
 	//EnableGpioDetect(unsigned int pinNum, enum DETECT_TYPE type)
-	EnableGpioDetect(RPI_GPIO5, DETECT_RISING);
+	hal_gpio_EnablePinInterrupt(HAL_GPIO_PIN5, HAL_GPIO_DETECT_RISING);
 
 
 	// Enable interrupts!

@@ -5,7 +5,7 @@
 #include "../../int_types.h"
 #include "../rpi-base.h"
 
-#define RPI_SYSTIMER_BASE       ( PERIPHERAL_BASE + 0x3000 )
+#define RPI_SYSTIMER_BASE       ( HAL_RPI_PERIPHERAL_BASE + 0x3000 )
 
 
 typedef struct {

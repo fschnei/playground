@@ -1,89 +1,87 @@
 
 #include "rpi-gpio.h"
 
-//static rpi_gpio_t* rpiGpio = (rpi_gpio_t*)RPI_GPIO_BASE;
 
-// ( PERIPHERAL_BASE + 0x200000UL )
-//volatile BCM2835_GPIO_REGS * const pRegs = (BCM2835_GPIO_REGS *) (0x20200000);
-volatile BCM2835_GPIO_REGS * const pRegs_ = (BCM2835_GPIO_REGS *) (0x3F200000);
+static volatile bcm_gpio_regs_t * const hal_gpio_regs = (bcm_gpio_regs_t *) (HAL_GPIO_BASE);
 
 
-
-volatile BCM2835_GPIO_REGS* const RPI_GetGpio(void)
+// provide pinter to gpio registers via function
+// -> read only access to hal_gpio_regs
+// -> no change of hal_gpio_regs by mistake
+volatile bcm_gpio_regs_t* const hal_gpio_getBase(void)
 {
-    return pRegs_;
+    return hal_gpio_regs;
 }
 
 
-void RPI_SetGpioPinFunction( rpi_gpio_pin_t gpio, rpi_gpio_alt_function_t func )
+void hal_gpio_SetPinFunction( rpi_gpio_pin_t gpio, rpi_gpio_alt_function_t func )
 {
-    rpi_reg_rw_t* fsel_reg = &((rpi_reg_rw_t*)pRegs_)[ gpio / 10 ];
-    rpi_reg_rw_t fsel_copy = *fsel_reg;
-    fsel_copy &= ~( FS_MASK << ( ( gpio % 10 ) * 3 ) );
+    rpi_reg_rw_t fsel_copy = hal_gpio_regs->GPFSEL[gpio/10];
+    fsel_copy &= ~( HAL_GPIO_FUNC_SEL_CLR_MASK << ( ( gpio % 10 ) * 3 ) );
     fsel_copy |= (func << ( ( gpio % 10 ) * 3 ) );
-    *fsel_reg = fsel_copy;
+    hal_gpio_regs->GPFSEL[gpio/10] = fsel_copy;
 }
 
 
-void RPI_SetGpioOutput( rpi_gpio_pin_t gpio )
+void hal_gpio_SetOutput( rpi_gpio_pin_t gpio )
 {
-    RPI_SetGpioPinFunction( gpio, FS_OUTPUT );
+	hal_gpio_SetPinFunction( gpio, HAL_GPIO_FUNC_SEL_OUTPUT );
 }
 
 
-void RPI_SetGpioInput( rpi_gpio_pin_t gpio )
+void hal_gpio_SetInput( rpi_gpio_pin_t gpio )
 {
-    RPI_SetGpioPinFunction( gpio, FS_INPUT );
+	hal_gpio_SetPinFunction( gpio, HAL_GPIO_FUNC_SEL_INPUT );
 }
 
 
-rpi_gpio_value_t RPI_GetGpioValue( rpi_gpio_pin_t gpio )
+hal_gpio_level_t hal_gpio_GetValue( rpi_gpio_pin_t gpio )
 {
-    rpi_gpio_value_t result = RPI_IO_UNKNOWN;
+	hal_gpio_level_t result = HAL_GPIO_LVL_UNKNOWN;
 
     switch( gpio / 32 )
     {
         case 0:
-            result = pRegs_->GPLEV[0] & ( 1 << gpio );
+            result = hal_gpio_regs->GPLEV[0] & ( 1 << gpio );
             break;
 
         case 1:
-            result = pRegs_->GPLEV[1] & ( 1 << ( gpio - 32 ) );
+            result = hal_gpio_regs->GPLEV[1] & ( 1 << ( gpio - 32 ) );
             break;
 
         default:
             break;
     }
 
-    if( result != RPI_IO_UNKNOWN )
+    if( result != HAL_GPIO_LVL_UNKNOWN )
     {
         if( result )
-            result = RPI_IO_HI;
+            result = HAL_GPIO_LVL_HI;
     }
 
     return result;
 }
 
 
-void RPI_ToggleGpio( rpi_gpio_pin_t gpio )
+void hal_gpio_Toggle( rpi_gpio_pin_t gpio )
 {
-    if( RPI_GetGpioValue( gpio ) )
-        RPI_SetGpioLo( gpio );
+    if( hal_gpio_GetValue( gpio ) )
+    	hal_gpio_SetLo( gpio );
     else
-        RPI_SetGpioHi( gpio );
+    	hal_gpio_SetHi( gpio );
 }
 
 
-void RPI_SetGpioHi( rpi_gpio_pin_t gpio )
+void hal_gpio_SetHi( rpi_gpio_pin_t gpio )
 {
     switch( gpio / 32 )
     {
         case 0:
-        	pRegs_->GPSET[0] = ( 1 << gpio );
+        	hal_gpio_regs->GPSET[0] = ( 1 << gpio );
             break;
 
         case 1:
-        	pRegs_->GPSET[1] = ( 1 << ( gpio - 32 ) );
+        	hal_gpio_regs->GPSET[1] = ( 1 << ( gpio - 32 ) );
             break;
 
         default:
@@ -92,16 +90,16 @@ void RPI_SetGpioHi( rpi_gpio_pin_t gpio )
 }
 
 
-void RPI_SetGpioLo( rpi_gpio_pin_t gpio )
+void hal_gpio_SetLo( rpi_gpio_pin_t gpio )
 {
     switch( gpio / 32 )
     {
         case 0:
-        	pRegs_->GPCLR[0] = ( 1 << gpio );
+        	hal_gpio_regs->GPCLR[0] = ( 1 << gpio );
             break;
 
         case 1:
-        	pRegs_->GPCLR[1] = ( 1 << ( gpio - 32 ) );
+        	hal_gpio_regs->GPCLR[1] = ( 1 << ( gpio - 32 ) );
             break;
 
         default:
@@ -110,12 +108,12 @@ void RPI_SetGpioLo( rpi_gpio_pin_t gpio )
 }
 
 
-void RPI_SetGpioValue( rpi_gpio_pin_t gpio, rpi_gpio_value_t value )
+void hal_gpio_SetValue( rpi_gpio_pin_t gpio, hal_gpio_level_t value )
 {
-    if( ( value == RPI_IO_LO ) || ( value == RPI_IO_OFF ) )
-        RPI_SetGpioLo( gpio );
-    else if( ( value == RPI_IO_HI ) || ( value == RPI_IO_ON ) )
-        RPI_SetGpioHi( gpio );
+    if( ( value == HAL_GPIO_LVL_LO ) || ( value == HAL_GPIO_LVL_OFF ) )
+    	hal_gpio_SetLo( gpio );
+    else if( ( value == HAL_GPIO_LVL_HI ) || ( value == HAL_GPIO_LVL_ON ) )
+    	hal_gpio_SetLo( gpio );
 }
 
 
@@ -124,70 +122,70 @@ void RPI_SetGpioValue( rpi_gpio_pin_t gpio, rpi_gpio_value_t value )
 
 
 
-void EnableGpioDetect(unsigned int pinNum, enum DETECT_TYPE type)
+void hal_gpio_EnablePinInterrupt(unsigned int pinNum, enum DETECT_TYPE type)
 {
 	unsigned long mask=(1<<pinNum);
 	unsigned long offset=pinNum/32;
 
 	switch(type) {
-	case DETECT_RISING:
-		pRegs_->GPREN[offset]|=mask;
+	case HAL_GPIO_DETECT_RISING:
+		hal_gpio_regs->GPREN[offset]|=mask;
 		break;
-	case DETECT_FALLING:
-		pRegs_->GPFEN[offset]|=mask;
+	case HAL_GPIO_DETECT_FALLING:
+		hal_gpio_regs->GPFEN[offset]|=mask;
 		break;
-	case DETECT_HIGH:
-		pRegs_->GPHEN[offset]|=mask;
+	case HAL_GPIO_DETECT_HIGH:
+		hal_gpio_regs->GPHEN[offset]|=mask;
 		break;
-	case DETECT_LOW:
-		pRegs_->GPLEN[offset]|=mask;
+	case HAL_GPIO_DETECT_LOW:
+		hal_gpio_regs->GPLEN[offset]|=mask;
 		break;
-	case DETECT_RISING_ASYNC:
-		pRegs_->GPAREN[offset]|=mask;
+	case HAL_GPIO_DETECT_RISING_ASYNC:
+		hal_gpio_regs->GPAREN[offset]|=mask;
 		break;
-	case DETECT_FALLING_ASYNC:
-		pRegs_->GPAFEN[offset]|=mask;
+	case HAL_GPIO_DETECT_FALLING_ASYNC:
+		hal_gpio_regs->GPAFEN[offset]|=mask;
 		break;
-	case DETECT_NONE:
+	case HAL_GPIO_DETECT_NONE:
 		break;
 	}
 }
 
-void DisableGpioDetect(unsigned int pinNum, enum DETECT_TYPE type)
+void hal_gpio_DisablePinInterrupt(unsigned int pinNum, enum DETECT_TYPE type)
 {
 	unsigned long mask=~(1<<(pinNum%32));
 	unsigned long offset=pinNum/32;
 
 	switch(type) {
-	case DETECT_RISING:
-		pRegs_->GPREN[offset]&=mask;
+	case HAL_GPIO_DETECT_RISING:
+		hal_gpio_regs->GPREN[offset]&=mask;
 		break;
-	case DETECT_FALLING:
-		pRegs_->GPFEN[offset]&=mask;
+	case HAL_GPIO_DETECT_FALLING:
+		hal_gpio_regs->GPFEN[offset]&=mask;
 		break;
-	case DETECT_HIGH:
-		pRegs_->GPHEN[offset]&=mask;
+	case HAL_GPIO_DETECT_HIGH:
+		hal_gpio_regs->GPHEN[offset]&=mask;
 		break;
-	case DETECT_LOW:
-		pRegs_->GPLEN[offset]&=mask;
+	case HAL_GPIO_DETECT_LOW:
+		hal_gpio_regs->GPLEN[offset]&=mask;
 		break;
-	case DETECT_RISING_ASYNC:
-		pRegs_->GPAREN[offset]&=mask;
+	case HAL_GPIO_DETECT_RISING_ASYNC:
+		hal_gpio_regs->GPAREN[offset]&=mask;
 		break;
-	case DETECT_FALLING_ASYNC:
-		pRegs_->GPAFEN[offset]&=mask;
+	case HAL_GPIO_DETECT_FALLING_ASYNC:
+		hal_gpio_regs->GPAFEN[offset]&=mask;
 		break;
-	case DETECT_NONE:
+	case HAL_GPIO_DETECT_NONE:
 		break;
 	}
 }
 
-void ClearGpioInterrupt(unsigned int pinNum)
+void hal_gpio_ClearInterrupt(unsigned int pinNum)
 {
 	unsigned long mask=(1<<(pinNum%32));
 	unsigned long offset=pinNum/32;
 
-	pRegs_->GPEDS[offset]=mask;
+	hal_gpio_regs->GPEDS[offset]=mask;
 }
 
 
