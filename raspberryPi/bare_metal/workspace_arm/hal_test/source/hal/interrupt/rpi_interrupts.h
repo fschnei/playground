@@ -68,7 +68,7 @@ void irq_init(void);
 
 void irqHandler (void);
 
-void irqRegister	(const unsigned int irq, FN_INTERRUPT_HANDLER pfnHandler, void *pParam);
+void irqRegister	(const unsigned int irq, FN_INTERRUPT_HANDLER pfnHandler, void *pParam, unsigned int Enable);
 void irqEnable		(const unsigned int irq);
 void irqDisable		(const unsigned int irq);
 void irqBlock		(void);

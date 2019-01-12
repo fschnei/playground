@@ -14,6 +14,9 @@
 
 #include "../auxiliaries/rpi-aux.h"
 
+#include "../../asm_prototypes.h"
+#include "../gpio/rpi-gpio.h"
+
 
 static INTERRUPT_VECTOR g_VectorTable[BCM2835_INTC_TOTAL_IRQ];
 
@@ -44,17 +47,32 @@ static unsigned long enabled[3];
 void Timer_ISR_function(unsigned int irq, void *pParam)
 {
     RPI_GetArmTimer()->IRQClear = 1;
-    RPI_AuxMiniUartWrite( 'A' );
+    //RPI_AuxMiniUartWrite( 'A' );
 }
+
+void GPIO_ISR_function(unsigned int irq, void *pParam)
+{
+	unsigned int reg;
+	// check which is the source
+	//reg = GET32(RPI_GetGpio()->GPEDS0);
+	reg = RPI_GetGpio()->GPEDS0;
+	//PUT32(RPI_GetGpio()->GPEDS0, 0x0000);
+	RPI_GetGpio()->GPEDS0 = 0xFFFF;
+	//reg = GET32(RPI_GetGpio()->GPEDS0);
+	reg = RPI_GetGpio()->GPEDS0;
+}
+
 
 void irq_init(void)
 {
 	// register isr
 	// void irqRegister (const unsigned int irq, FN_INTERRUPT_HANDLER pfnHandler, void *pParam)
-	irqRegister (BCM2835_IRQ_ID_TIMER_0, Timer_ISR_function, 0);
+	irqRegister (BCM2835_IRQ_ID_TIMER_0, Timer_ISR_function, 0, 0);
+	irqRegister (BCM2835_IRQ_ID_GPIO_0, GPIO_ISR_function, 0, 0);
 
 	irqEnable(BCM2835_IRQ_ID_TIMER_0);
 
+	irqEnable(BCM2835_IRQ_ID_GPIO_0);
 
 }
 
@@ -112,21 +130,26 @@ void irqHandler (void)
 
 void irqUnblock (void)
 {
+	// https://stackoverflow.com/questions/14950614/working-of-asm-volatile-memory
+	// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHBFEIB.html
 	asm volatile ("cpsie i" ::: "memory");
 }
 
 void irqBlock (void)
 {
+	// https://stackoverflow.com/questions/14950614/working-of-asm-volatile-memory
+	// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHBFEIB.html
 	asm volatile ("cpsid i" ::: "memory");
 }
 
-void irqRegister (const unsigned int irq, FN_INTERRUPT_HANDLER pfnHandler, void *pParam)
+void irqRegister (const unsigned int irq, FN_INTERRUPT_HANDLER pfnHandler, void *pParam, unsigned int Enable)
 {
 	if (irq < BCM2835_INTC_TOTAL_IRQ) {
 		irqBlock();
 		g_VectorTable[irq].pfnHandler = pfnHandler;
 		g_VectorTable[irq].pParam     = pParam;
-		irqUnblock();
+		if(Enable)
+			irqUnblock();
 	}
 }
 
