@@ -9,12 +9,11 @@
 #define _HAL_H_
 
 
-#include "arm_timer/rpi-armtimer.h"
-#include "auxiliaries/rpi-aux.h"
-#include "gpio/rpi-gpio.h"
-#include "interrupt/rpi-interrupts.h"
+#include "arm_timer/rpi_armTimer.h"
+#include "auxiliaries/rpi_aux.h"
+#include "gpio/rpi_gpio.h"
 #include "interrupt/rpi_interrupts.h"
-#include "sys_timer/rpi-systimer.h"
+#include "sys_timer/rpi_sysTimer.h"
 
 
 void hal_init(void);

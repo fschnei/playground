@@ -9,19 +9,16 @@
 
 #include "rpi_interrupts.h"
 
-#include "../arm_timer/rpi-armtimer.h"
-//#include "bcm2835_intc.h"
-
-#include "../auxiliaries/rpi-aux.h"
-
 #include "../../asm_prototypes.h"
-#include "../gpio/rpi-gpio.h"
+#include "../arm_timer/rpi_armTimer.h"
+#include "../auxiliaries/rpi_aux.h"
+#include "../gpio/rpi_gpio.h"
 
 
 // 0...31 -> pending, enable, disable 0 registers
 // 32..63 -> pending, enable, disable 1 registers
 // 64..73 -> pending, enable, disable basic (2) registers
-static hal_interrupt_isrPlusParms_t g_VectorTable[HAL_INTERRUPT_ISR_COUNT];
+static hal_interrupt_isrPlusParms_t hal_interrupt_isrArray[HAL_INTERRUPT_ISR_COUNT];
 
 
 
@@ -33,11 +30,9 @@ static volatile hal_interrupt_regs_t * const pRegs = (hal_interrupt_regs_t *) (H
 static unsigned long enabled[3];
 
 
-static hal_interrupt_parms_t hal_intParms;
 
 
-
-volatile hal_interrupt_regs_t * RPI_GetIrqController( void )
+volatile hal_interrupt_regs_t * hal_interrupt_GetBase( void )
 {
     return pRegs;
 }
@@ -48,7 +43,7 @@ volatile hal_interrupt_regs_t * RPI_GetIrqController( void )
 
 void Timer_ISR_function(unsigned int irq, void *pParam)
 {
-    RPI_GetArmTimer()->IRQClear = 1;
+	hal_armTimer_GetBase()->IRQClear = 1;
     RPI_AuxMiniUartWrite( 'A' );
 }
 
@@ -75,13 +70,10 @@ void GPIO_ISR_function(unsigned int irq, void * pParam)
 void hal_interrupt_init(void)
 {
 	// register isr
-	// void irqRegister (const unsigned int irq, FN_INTERRUPT_HANDLER pfnHandler, void *pParam)
 
-	//hal_interrupt_resgisterIsr (HAL_INTERRUPT_ID_TIMER_0, Timer_ISR_function, 0, 0);
-	//hal_interrupt_enable(HAL_INTERRUPT_ID_TIMER_0);
+	//hal_interrupt_registerAndEnableIsr (HAL_INTERRUPT_ID_TIMER_0, Timer_ISR_function, 0, 0);
 
-	hal_interrupt_resgisterIsr (HAL_INTERRUPT_ID_GPIO_0, GPIO_ISR_function, (void*)(&hal_intParms), 0);
-	hal_interrupt_enable(HAL_INTERRUPT_ID_GPIO_0);
+	hal_interrupt_registerAndEnableIsr (HAL_INTERRUPT_ID_GPIO_0, GPIO_ISR_function, 0, 0);
 
 }
 
@@ -95,7 +87,7 @@ static void hal_interrupt_isr_handleRange (unsigned long pending, const unsigned
 	while (pending)
 	{
 		// copy pending register to function parms
-		hal_intParms.Pending = pending;
+		//hal_intParms.Pending = pending;
 
 		// Get index of first set bit:
 		unsigned int bit = 31 - __builtin_clz(pending);	// count leading zeros
@@ -104,8 +96,8 @@ static void hal_interrupt_isr_handleRange (unsigned long pending, const unsigned
 		unsigned int irq = base + bit;
 
 		// Call interrupt handler, if enabled:
-		if (g_VectorTable[irq].pfnHandler)
-			g_VectorTable[irq].pfnHandler(irq, g_VectorTable[irq].pParam);
+		if (hal_interrupt_isrArray[irq].pfnHandler)
+			hal_interrupt_isrArray[irq].pfnHandler(irq, hal_interrupt_isrArray[irq].pParam);
 
 		// Clear bit in bitfield:
 		pending &= ~(1UL << bit);
@@ -146,7 +138,7 @@ void hal_interrupt_isr (void)
 
 	// clear all remaining interrupt flags -> interrupt with no handler will not rise in series and block cpu
 	// debug: clear timer flag:
-    RPI_GetArmTimer()->IRQClear = 1;
+	hal_armTimer_GetBase()->IRQClear = 1;
     // gpio interrupts are clear by write a 1 to corresponding register (see p. 96)
     // clear pending gpio bits 0 ... 31
     hal_gpio_getBase()->GPEDS[0] = 0xFFFFFFFFUL;
@@ -175,15 +167,24 @@ void hal_interrupt_resgisterIsr (const unsigned int irq, hal_interrupt_isr_t pfn
 {
 	if (irq < HAL_INTERRUPT_ISR_COUNT) {
 		hal_interrupt_block();
-		g_VectorTable[irq].pfnHandler = pfnHandler;
-		g_VectorTable[irq].pParam     = pParam;
+		hal_interrupt_isrArray[irq].pfnHandler = pfnHandler;
+		hal_interrupt_isrArray[irq].pParam     = pParam;
 		if(Enable)
 			hal_interrupt_unblock();
 	}
 }
 
+void hal_interrupt_registerAndEnableIsr (const unsigned int irq, hal_interrupt_isr_t pfnHandler, void *pParam, unsigned int Enable)
+{
+	hal_interrupt_resgisterIsr (irq, pfnHandler, pParam, 0);
+	hal_interrupt_enable(irq);
+	if(Enable)
+		hal_interrupt_unblock();
+}
+
 void hal_interrupt_enable (const unsigned int irq)
 {
+	// write bit into enable register -> interrupt can occur in pending registers
 	unsigned long mask = 1UL << (irq % 32);
 
 	if (irq <= 31) {
@@ -202,6 +203,7 @@ void hal_interrupt_enable (const unsigned int irq)
 
 void hal_interrupt_disable (const unsigned int irq)
 {
+	// write bit into disable register -> interrupt can not occur in pending registers
 	unsigned long mask = 1UL << (irq % 32);
 
 	if (irq <= 31) {
@@ -220,7 +222,10 @@ void hal_interrupt_disable (const unsigned int irq)
 
 
 
+
+
 // --------------- Interrupt Vectors -----------------------
+// see .start asm file
 
 
 
@@ -235,7 +240,7 @@ void __attribute__((interrupt("ABORT"))) reset_vector(void)
 {
     while( 1 )
     {
-        //LED_ON();
+        ;
     }
 }
 
@@ -249,8 +254,7 @@ void __attribute__((interrupt("UNDEF"))) undefined_instruction_vector(void)
 {
     while( 1 )
     {
-        /* Do Nothing! */
-        //LED_ON();
+        ;
     }
 }
 
@@ -265,8 +269,7 @@ void __attribute__((interrupt("SWI"))) software_interrupt_vector(void)
 {
     while( 1 )
     {
-        /* Do Nothing! */
-        //LED_ON();
+        ;
     }
 }
 
@@ -281,7 +284,7 @@ void __attribute__((interrupt("ABORT"))) prefetch_abort_vector(void)
 {
     while( 1 )
     {
-        //LED_ON();
+        ;
     }
 }
 
@@ -296,7 +299,7 @@ void __attribute__((interrupt("ABORT"))) data_abort_vector(void)
 {
     while( 1 )
     {
-        //LED_ON();
+    	;
     }
 }
 
@@ -311,45 +314,7 @@ void __attribute__((interrupt("ABORT"))) data_abort_vector(void)
 */
 void __attribute__((interrupt("IRQ"))) interrupt_vector(void)
 {
-    //static int lit = 0;
-    //static int ticks = 0;
-    //static int seconds = 0;
-
  	hal_interrupt_isr();
-
-
-
-    // Clear the ARM Timer interrupt - it's the only interrupt we have
-    //   enabled, so we want don't have to work out which interrupt source
-    //   caused us to interrupt
-    /*RPI_GetArmTimer()->IRQClear = 1;
-
-    ticks++;
-    if( ticks > 1 )
-    {
-        ticks = 0;
-
-        // Calculate the FPS once a minute /
-        seconds++;
-        if( seconds > 59 )
-        {
-            seconds = 0;
-        }
-    }
-
-    // Flip the LED /
-    if( lit )
-    {
-        LED_OFF();
-    	RPI_SetGpioLo( RPI_GPIO5 );
-        lit = 0;
-    }
-    else
-    {
-        LED_ON();
-    	RPI_SetGpioHi( RPI_GPIO5 );
-        lit = 1;
-    }*/
 }
 
 
@@ -380,7 +345,10 @@ void __attribute__((interrupt("IRQ"))) interrupt_vector(void)
 */
 void __attribute__((interrupt("FIQ"))) fast_interrupt_vector(void)
 {
-
+    while( 1 )
+    {
+    	;
+    }
 }
 
 

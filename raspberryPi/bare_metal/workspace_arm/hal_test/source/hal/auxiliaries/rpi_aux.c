@@ -1,7 +1,7 @@
 
-#include "rpi-aux.h"
+#include "../gpio/rpi_gpio.h"
 #include "../rpi-base.h"
-#include "../gpio/rpi-gpio.h"
+#include "rpi_aux.h"
 
 static aux_t* auxillary = (aux_t*)AUX_BASE;
 

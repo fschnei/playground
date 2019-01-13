@@ -6,6 +6,7 @@
  */
 
 #include "hal.h"
+
 #include "interrupt/rpi_interrupts.h"
 
 void hal_init(void)
@@ -21,22 +22,23 @@ void hal_init(void)
 	// Initialise the UART
 	RPI_AuxMiniUartInit( 9600, 8 );
 
-	hal_interrupt_init();
-
 	// Enable the timer interrupt IRQ ... this is done in hal_interrupt_init
 	//RPI_GetIrqController()->EnableBasicIRQs = RPI_BASIC_ARM_TIMER_IRQ;
 
+	hal_armTimer_Init();
 
-	// Setup the system timer interrupt
+	/*// Setup the system timer interrupt
 	// Timer frequency = Clk/256 * 0x400
-	RPI_GetArmTimer()->Load = 0x4000;
+	hal_armTimer_GetBase()->Load = 0x4000;
 
 	// Setup the ARM Timer
-	RPI_GetArmTimer()->Control =
+	hal_armTimer_GetBase()->Control =
 			RPI_ARMTIMER_CTRL_23BIT |
 			RPI_ARMTIMER_CTRL_ENABLE |
 			RPI_ARMTIMER_CTRL_INT_ENABLE |
-			RPI_ARMTIMER_CTRL_PRESCALE_256;
+			RPI_ARMTIMER_CTRL_PRESCALE_256;*/
+
+	hal_interrupt_init();
 
 
 	//EnableGpioDetect(unsigned int pinNum, enum DETECT_TYPE type)

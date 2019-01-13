@@ -107,7 +107,11 @@ typedef struct {
     } rpi_arm_timer_t;
 
 
-extern rpi_arm_timer_t* RPI_GetArmTimer(void);
-extern void RPI_ArmTimerInit(void);
+
+volatile rpi_arm_timer_t * hal_armTimer_GetBase(void);
+
+void hal_armTimer_Init(void);
+
+
 
 #endif

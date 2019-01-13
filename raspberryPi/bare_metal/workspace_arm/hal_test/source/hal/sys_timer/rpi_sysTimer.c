@@ -1,6 +1,7 @@
 
+#include "rpi_sysTimer.h"
+
 #include "../../int_types.h"
-#include "rpi-systimer.h"
 
 static rpi_sys_timer_t* rpiSystemTimer = (rpi_sys_timer_t*)RPI_SYSTIMER_BASE;
 

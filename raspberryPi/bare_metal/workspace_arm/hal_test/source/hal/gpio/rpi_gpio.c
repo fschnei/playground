@@ -1,5 +1,5 @@
 
-#include "rpi-gpio.h"
+#include "rpi_gpio.h"
 
 
 static volatile bcm_gpio_regs_t * const hal_gpio_regs = (bcm_gpio_regs_t *) (HAL_GPIO_BASE);
