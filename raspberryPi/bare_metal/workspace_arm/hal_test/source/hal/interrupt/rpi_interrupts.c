@@ -18,27 +18,29 @@
 #include "../gpio/rpi-gpio.h"
 
 
-static INTERRUPT_VECTOR g_VectorTable[BCM2835_INTC_TOTAL_IRQ];
+// 0...31 -> pending, enable, disable 0 registers
+// 32..63 -> pending, enable, disable 1 registers
+// 64..73 -> pending, enable, disable basic (2) registers
+static hal_interrupt_isrPlusParms_t g_VectorTable[HAL_INTERRUPT_ISR_COUNT];
 
 
-typedef struct {
-	unsigned long	IRQBasic;	// Pending 0
-	unsigned long	Pending1;
-	unsigned long	Pending2;
-	unsigned long	FIQCtrl;
-	unsigned long	Enable1;
-	unsigned long	Enable2;
-	unsigned long	EnableBasic;
-	unsigned long	Disable1;
-	unsigned long	Disable2;
-	unsigned long	DisableBasic;
-} BCM2835_INTC_REGS;
 
-static volatile BCM2835_INTC_REGS * const pRegs = (BCM2835_INTC_REGS *) (BCM2835_BASE_INTC);
 
-// Remember which interrupts have been enabled:
+
+static volatile hal_interrupt_regs_t * const pRegs = (hal_interrupt_regs_t *) (HAL_INTERRUPT_BASE);
+
+// Remember which interrupts have been enabled (in pending register (0,1) and basic pending register (2)):
 static unsigned long enabled[3];
 
+
+static hal_interrupt_parms_t hal_intParms;
+
+
+
+volatile hal_interrupt_regs_t * RPI_GetIrqController( void )
+{
+    return pRegs;
+}
 
 
 
@@ -47,11 +49,16 @@ static unsigned long enabled[3];
 void Timer_ISR_function(unsigned int irq, void *pParam)
 {
     RPI_GetArmTimer()->IRQClear = 1;
-    //RPI_AuxMiniUartWrite( 'A' );
+    RPI_AuxMiniUartWrite( 'A' );
 }
 
-void GPIO_ISR_function(unsigned int irq, void *pParam)
+void GPIO_ISR_function(unsigned int irq, void * pParam)
 {
+	hal_interrupt_parms_t IntParms;
+	uint32_t Pin;
+	IntParms = *((hal_interrupt_parms_t*)pParam);
+	Pin = IntParms.Pending;
+
 	//unsigned int reg;
 	rpi_volatile_reg_t reg;
 	// check which is the source
@@ -65,16 +72,16 @@ void GPIO_ISR_function(unsigned int irq, void *pParam)
 }
 
 
-void irq_init(void)
+void hal_interrupt_init(void)
 {
 	// register isr
 	// void irqRegister (const unsigned int irq, FN_INTERRUPT_HANDLER pfnHandler, void *pParam)
-	irqRegister (BCM2835_IRQ_ID_TIMER_0, Timer_ISR_function, 0, 0);
-	irqRegister (BCM2835_IRQ_ID_GPIO_0, GPIO_ISR_function, 0, 0);
 
-	//irqEnable(BCM2835_IRQ_ID_TIMER_0);
+	//hal_interrupt_resgisterIsr (HAL_INTERRUPT_ID_TIMER_0, Timer_ISR_function, 0, 0);
+	//hal_interrupt_enable(HAL_INTERRUPT_ID_TIMER_0);
 
-	irqEnable(BCM2835_IRQ_ID_GPIO_0);
+	hal_interrupt_resgisterIsr (HAL_INTERRUPT_ID_GPIO_0, GPIO_ISR_function, (void*)(&hal_intParms), 0);
+	hal_interrupt_enable(HAL_INTERRUPT_ID_GPIO_0);
 
 }
 
@@ -83,10 +90,13 @@ void irq_init(void)
 
 
 // is been called on an hw interrupt, this function calls self defined interrupt functions via function pointer array
-static void handleRange (unsigned long pending, const unsigned int base)
+static void hal_interrupt_isr_handleRange (unsigned long pending, const unsigned int base)
 {
 	while (pending)
 	{
+		// copy pending register to function parms
+		hal_intParms.Pending = pending;
+
 		// Get index of first set bit:
 		unsigned int bit = 31 - __builtin_clz(pending);	// count leading zeros
 
@@ -107,23 +117,32 @@ static void handleRange (unsigned long pending, const unsigned int base)
  *	It is based on the assembler code found in the Broadcom datasheet.
  *
  **/
-void irqHandler (void)
+void hal_interrupt_isr (void)
 {
-	register unsigned long ulMaskedStatus = pRegs->IRQBasic;
+	// page 112 https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
+	register unsigned long ulMaskedStatus = pRegs->IRQBasicPending;
 
-	//Timer_ISR_function(0, 0);
+	//
 
-	// Bit 8 in IRQBasic indicates interrupts in Pending1 (interrupts 31-0):
+	// Bit 8 in IRQBasic indicates interrupts in Pending1 (interrupts 0-31):
 	if (ulMaskedStatus & (1UL << 8))
-		handleRange(pRegs->Pending1 & enabled[0], 0);
+		hal_interrupt_isr_handleRange(pRegs->IRQPending1 & enabled[0], 0);
 
-	// Bit 9 in IRQBasic indicates interrupts in Pending2 (interrupts 63-32):
+	// Bit 9 in IRQBasic indicates interrupts in Pending2 (interrupts 32-63):
 	if (ulMaskedStatus & (1UL << 9))
-		handleRange(pRegs->Pending2 & enabled[1], 32);
+		hal_interrupt_isr_handleRange(pRegs->IRQPending2 & enabled[1], 32);
 
 	// Bits 7 through 0 in IRQBasic represent interrupts 64-71:
+	// 0	64	ARM Timer
+	// 1	65	ARM Mailbox
+	// 2	66	ARM Doorbell 0
+	// 3	67	ARM Doorbell 1
+	// 4	68	GPU 0 halted
+	// 5	69	GPU 1 halted
+	// 6	70	Illegal access type 1
+	// 7	71	Illegal access type 0
 	if (ulMaskedStatus & 0xFF)
-		handleRange(ulMaskedStatus & 0xFF & enabled[2], 64);
+		hal_interrupt_isr_handleRange(ulMaskedStatus & 0xFF & enabled[2], 64);
 
 	// clear all remaining interrupt flags -> interrupt with no handler will not rise in series and block cpu
 	// debug: clear timer flag:
@@ -138,65 +157,236 @@ void irqHandler (void)
 
 }
 
-void irqUnblock (void)
+void hal_interrupt_unblock (void)
 {
 	// https://stackoverflow.com/questions/14950614/working-of-asm-volatile-memory
 	// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHBFEIB.html
 	asm volatile ("cpsie i" ::: "memory");
 }
 
-void irqBlock (void)
+void hal_interrupt_block (void)
 {
 	// https://stackoverflow.com/questions/14950614/working-of-asm-volatile-memory
 	// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHBFEIB.html
 	asm volatile ("cpsid i" ::: "memory");
 }
 
-void irqRegister (const unsigned int irq, FN_INTERRUPT_HANDLER pfnHandler, void *pParam, unsigned int Enable)
+void hal_interrupt_resgisterIsr (const unsigned int irq, hal_interrupt_isr_t pfnHandler, void *pParam, unsigned int Enable)
 {
-	if (irq < BCM2835_INTC_TOTAL_IRQ) {
-		irqBlock();
+	if (irq < HAL_INTERRUPT_ISR_COUNT) {
+		hal_interrupt_block();
 		g_VectorTable[irq].pfnHandler = pfnHandler;
 		g_VectorTable[irq].pParam     = pParam;
 		if(Enable)
-			irqUnblock();
+			hal_interrupt_unblock();
 	}
 }
 
-void irqEnable (const unsigned int irq)
+void hal_interrupt_enable (const unsigned int irq)
 {
 	unsigned long mask = 1UL << (irq % 32);
 
 	if (irq <= 31) {
-		pRegs->Enable1 = mask;
+		pRegs->EnableIRQs1 = mask;
 		enabled[0] |= mask;
 	}
 	else if (irq <= 63) {
-		pRegs->Enable2 = mask;
+		pRegs->EnableIRQs2 = mask;
 		enabled[1] |= mask;
 	}
-	else if (irq < BCM2835_INTC_TOTAL_IRQ) {
-		pRegs->EnableBasic = mask;
+	else if (irq < HAL_INTERRUPT_ISR_COUNT) {
+		pRegs->EnableBasicIRQs = mask;
 		enabled[2] |= mask;
 	}
 }
 
-void irqDisable (const unsigned int irq)
+void hal_interrupt_disable (const unsigned int irq)
 {
 	unsigned long mask = 1UL << (irq % 32);
 
 	if (irq <= 31) {
-		pRegs->Disable1 = mask;
+		pRegs->DisableIRQs1 = mask;
 		enabled[0] &= ~mask;
 	}
 	else if (irq <= 63) {
-		pRegs->Disable2 = mask;
+		pRegs->DisableIRQs2 = mask;
 		enabled[1] &= ~mask;
 	}
-	else if (irq < BCM2835_INTC_TOTAL_IRQ) {
-		pRegs->DisableBasic = mask;
+	else if (irq < HAL_INTERRUPT_ISR_COUNT) {
+		pRegs->DisableBasicIRQs = mask;
 		enabled[2] &= ~mask;
 	}
 }
+
+
+
+// --------------- Interrupt Vectors -----------------------
+
+
+
+/**
+    @brief The Reset vector interrupt handler
+
+    This can never be called, since an ARM core reset would also reset the
+    GPU and therefore cause the GPU to start running code again until
+    the ARM is handed control at the end of boot loading
+*/
+void __attribute__((interrupt("ABORT"))) reset_vector(void)
+{
+    while( 1 )
+    {
+        //LED_ON();
+    }
+}
+
+/**
+    @brief The undefined instruction interrupt handler
+
+    If an undefined intstruction is encountered, the CPU will start
+    executing this function. Just trap here as a debug solution.
+*/
+void __attribute__((interrupt("UNDEF"))) undefined_instruction_vector(void)
+{
+    while( 1 )
+    {
+        /* Do Nothing! */
+        //LED_ON();
+    }
+}
+
+
+/**
+    @brief The supervisor call interrupt handler
+
+    The CPU will start executing this function. Just trap here as a debug
+    solution.
+*/
+void __attribute__((interrupt("SWI"))) software_interrupt_vector(void)
+{
+    while( 1 )
+    {
+        /* Do Nothing! */
+        //LED_ON();
+    }
+}
+
+
+/**
+    @brief The prefetch abort interrupt handler
+
+    The CPU will start executing this function. Just trap here as a debug
+    solution.
+*/
+void __attribute__((interrupt("ABORT"))) prefetch_abort_vector(void)
+{
+    while( 1 )
+    {
+        //LED_ON();
+    }
+}
+
+
+/**
+    @brief The Data Abort interrupt handler
+
+    The CPU will start executing this function. Just trap here as a debug
+    solution.
+*/
+void __attribute__((interrupt("ABORT"))) data_abort_vector(void)
+{
+    while( 1 )
+    {
+        //LED_ON();
+    }
+}
+
+
+/**
+    @brief The IRQ Interrupt handler
+
+    This handler is run every time an interrupt source is triggered. It's
+    up to the handler to determine the source of the interrupt and most
+    importantly clear the interrupt flag so that the interrupt won't
+    immediately put us back into the start of the handler again.
+*/
+void __attribute__((interrupt("IRQ"))) interrupt_vector(void)
+{
+    //static int lit = 0;
+    //static int ticks = 0;
+    //static int seconds = 0;
+
+ 	hal_interrupt_isr();
+
+
+
+    // Clear the ARM Timer interrupt - it's the only interrupt we have
+    //   enabled, so we want don't have to work out which interrupt source
+    //   caused us to interrupt
+    /*RPI_GetArmTimer()->IRQClear = 1;
+
+    ticks++;
+    if( ticks > 1 )
+    {
+        ticks = 0;
+
+        // Calculate the FPS once a minute /
+        seconds++;
+        if( seconds > 59 )
+        {
+            seconds = 0;
+        }
+    }
+
+    // Flip the LED /
+    if( lit )
+    {
+        LED_OFF();
+    	RPI_SetGpioLo( RPI_GPIO5 );
+        lit = 0;
+    }
+    else
+    {
+        LED_ON();
+    	RPI_SetGpioHi( RPI_GPIO5 );
+        lit = 1;
+    }*/
+}
+
+
+/**
+    @brief The FIQ Interrupt Handler
+
+    The FIQ handler can only be allocated to one interrupt source. The FIQ has
+    a full CPU shadow register set. Upon entry to this function the CPU
+    switches to the shadow register set so that there is no need to save
+    registers before using them in the interrupt.
+
+    In C you can't see the difference between the IRQ and the FIQ interrupt
+    handlers except for the FIQ knowing it's source of interrupt as there can
+    only be one source, but the prologue and epilogue code is quite different.
+    It's much faster on the FIQ interrupt handler.
+
+    The prologue is the code that the compiler inserts at the start of the
+    function, if you like, think of the opening curly brace of the function as
+    being the prologue code. For the FIQ interrupt handler this is nearly
+    empty because the CPU has switched to a fresh set of registers, there's
+    nothing we need to save.
+
+    The epilogue is the code that the compiler inserts at the end of the
+    function, if you like, think of the closing curly brace of the function as
+    being the epilogue code. For the FIQ interrupt handler this is nearly
+    empty because the CPU has switched to a fresh set of registers and so has
+    not altered the main set of registers.
+*/
+void __attribute__((interrupt("FIQ"))) fast_interrupt_vector(void)
+{
+
+}
+
+
+
+
+
+
 
 
