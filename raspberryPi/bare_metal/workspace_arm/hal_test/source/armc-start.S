@@ -58,7 +58,7 @@ _reset_:
     mov     r0, #0x8000
     mov     r1, #0x0000
 
-    // copy process
+    // ???
     ldmia   r0!,{r2, r3, r4, r5, r6, r7, r8, r9}
     stmia   r1!,{r2, r3, r4, r5, r6, r7, r8, r9}
     ldmia   r0!,{r2, r3, r4, r5, r6, r7, r8, r9}
@@ -147,5 +147,3 @@ _enable_interrupts:
     msr     cpsr_c, r0
 
     mov     pc, lr
-
-
