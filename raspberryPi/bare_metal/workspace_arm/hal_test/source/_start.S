@@ -46,7 +46,7 @@ _undefined_instruction_vector_h:    .word   undefined_instruction_vector
 _software_interrupt_vector_h:       .word   software_interrupt_vector
 _prefetch_abort_vector_h:           .word   prefetch_abort_vector
 _data_abort_vector_h:               .word   data_abort_vector
-_unused_handler_h:                  .word   _reset_
+_unused_handler_h:                  .word   unused_vector
 _interrupt_vector_h:                .word   interrupt_vector
 _fast_interrupt_vector_h:           .word   fast_interrupt_vector
 
@@ -141,11 +141,42 @@ GET32:
     ldr r0,[r0]
 bx lr
 
+.globl hal_GetCPSR
+hal_GetCPSR:
+	mrs     r0, cpsr
+	mov     pc, lr
+
 _enable_interrupts:
     mrs     r0, cpsr
     bic     r0, r0, #0x80
     msr     cpsr_c, r0
 
     mov     pc, lr
+
+
+
+undefined_instruction_vector:
+	b undefined_instruction_vector
+
+software_interrupt_vector:
+	b software_interrupt_vector
+
+prefetch_abort_vector:
+	b prefetch_abort_vector
+
+data_abort_vector:
+	b data_abort_vector
+
+unused_vector:
+	b unused_vector
+
+//interrupt_vector:
+//	b interrupt_vector
+
+fast_interrupt_vector:
+	b fast_interrupt_vector
+
+hang:
+	b hang
 
 

@@ -5,13 +5,15 @@
  *      Author: Fabian
  */
 
-#ifndef SOURCE_ASM_PROTOTYPES_H_
-#define SOURCE_ASM_PROTOTYPES_H_
+#ifndef ASM_PROTOTYPES_H_
+#define ASM_PROTOTYPES_H_
 
 
-extern void PUT32 ( unsigned int, unsigned int );
-extern unsigned int GET32 ( unsigned int );
+extern void PUT32 ( volatile unsigned long, volatile unsigned long );
+extern volatile unsigned long GET32 ( volatile unsigned long );
+extern void _enable_interrupts(void);
 
-extern void _enable_interrupts( void );
+extern unsigned long hal_GetCPSR (void);
 
-#endif /* SOURCE_ASM_PROTOTYPES_H_ */
+
+#endif /* ASM_PROTOTYPES_H_ */
