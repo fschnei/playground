@@ -2,31 +2,23 @@
 extern int __bss_start__;
 extern int __bss_end__;
 
-extern void application_main( unsigned int r0, unsigned int r1, unsigned int atags );
+extern void application_main();
 
 void _cstartup( unsigned int r0, unsigned int r1, unsigned int r2 )
 {
     int* bss = &__bss_start__;
     int* bss_end = &__bss_end__;
 
-    /*
-        Clear the BSS section
-
-        See http://en.wikipedia.org/wiki/.bss for further information on the
-            BSS section
-
-        See https://sourceware.org/newlib/libc.html#Stubs for further
-            information on the c-library stubs
-    */
+    // clear bss section
     while( bss < bss_end )
         *bss++ = 0;
 
-    /* We should never return from main ... */
-    application_main( r0, r1, r2 );
+    // call application
+    application_main();
 
-    /* ... but if we do, safely trap here */
+    // catch if application_main returns
     while(1)
     {
-        /* EMPTY! */
+        // nop
     }
 }

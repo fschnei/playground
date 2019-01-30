@@ -9,10 +9,25 @@
 
 #include "rpi_interrupts.h"
 
-#include "../../asm_prototypes.h"
 #include "../arm_timer/rpi_armTimer.h"
 #include "../auxiliaries/rpi_aux.h"
 #include "../gpio/rpi_gpio.h"
+#include "../hwBasic/rpi_hwBasic.h"
+
+
+
+
+extern void hal_interrupt_initIVT(void);
+
+void hal_interrupt_resgisterIsr (const unsigned int irq, hal_interrupt_isr_t pfnHandler, void *pParam, unsigned int Enable);
+void hal_interrupt_enableIRQ	(const unsigned int irq);
+// this type holds the callback address of the isr and a pointer to a parameter
+
+// add a isr of this type by calling hal_interrupt_registerAndEnableIsr
+typedef struct {
+	hal_interrupt_isr_t 	pfnHandler;			// callback function of the isr
+	void 				   *pParam;				// pointer to parameter for isr
+} hal_interrupt_isrPlusParms_t;
 
 
 // 0...31 -> pending, enable, disable 0 registers
@@ -24,38 +39,54 @@ static hal_interrupt_isrPlusParms_t hal_interrupt_isrArray[HAL_INTERRUPT_ISR_COU
 
 
 
-static volatile hal_interrupt_regs_t * const pRegs = (hal_interrupt_regs_t *) (HAL_INTERRUPT_BASE);
+//static volatile hal_interrupt_regs_t * const pRegs = (hal_interrupt_regs_t *) (HAL_INTERRUPT_BASE);
+static volatile hal_interrupt_regs_t * const hal_interrupt_regs = (hal_interrupt_regs_t *) (HAL_INTERRUPT_BASE);
 
-// Remember which interrupts have been enabled (in pending register (0,1) and basic pending register (2)):
+// remember which interrupts have been enabled (in pending register (0,1) and basic pending register (2)):
 static unsigned long enabled[3];
 
 
 
 
-volatile hal_interrupt_regs_t * hal_interrupt_GetBase( void )
+volatile hal_interrupt_regs_t * hal_interrupt_GetRegs( void )
 {
-    return pRegs;
+    return hal_interrupt_regs;
 }
 
+
+hal_base_t hal_interrupt_chackIrqFlag()
+{
+	hal_base_t cpsr = hal_hwBasic_GetCPSR();
+
+	hal_base_t buffer = ((cpsr >> 4) & 1);
+
+	return buffer;
+}
 
 
 //typedef void (*FN_INTERRUPT_HANDLER) (unsigned int irq, void *pParam);
 
 void Timer_ISR_function(unsigned int irq, void *pParam)
 {
-	hal_armTimer_GetBase()->IRQClear = 1;
+	hal_armTimer_GetRegs()->IrqClear = 1;
     RPI_AuxMiniUartWrite( 'A' );
 }
 
 void GPIO_ISR_function(unsigned int irq, void * pParam)
 {
 	hal_interrupt_parms_t IntParms;
-	uint32_t Pin;
-	IntParms = *((hal_interrupt_parms_t*)pParam);
-	Pin = IntParms.Pending;
+	hal_v_base_t PinNum, PinLevel;
+	hal_v_base_t PinEventDetectStatus_0, PinEventDetectStatus_1;
+	hal_gpio_level_t PinValue;
 
+	IntParms = *((hal_interrupt_parms_t*)pParam);
+
+
+
+	//Pin = IntParms.Pending;
 	//unsigned int reg;
-	rpi_volatile_reg_t reg;
+	//rpi_volatile_reg_t reg;
+
 	// check which is the source
 	//reg = GET32(RPI_GetGpio()->GPEDS0);
 
@@ -69,16 +100,51 @@ void GPIO_ISR_function(unsigned int irq, void * pParam)
 	// test if cleared
 
 	//reg = hal_gpio_getBase()->GPEDS[0];
+
+	// get pin which interrupted
+	PinEventDetectStatus_0 = hal_gpio_GetRegs()->GPEDS[0];
+	PinEventDetectStatus_1 = hal_gpio_GetRegs()->GPEDS[1];
+
+	if(PinEventDetectStatus_0 != 0)
+	{
+		PinNum = 31 - __builtin_clz(PinEventDetectStatus_0);
+	}
+	else if(PinEventDetectStatus_1 != 0)
+	{
+		PinNum = 31 - __builtin_clz(PinEventDetectStatus_1);
+	}
+	else
+	{
+		// set Pin to error state
+		PinNum = 0xFFFFFFFFUL;
+	}
+	if(PinNum <= 53) // highest gpio pin number
+	{
+		// get level of pin which interrupted
+		PinValue =  hal_gpio_GetValue( PinNum );
+
+		// get edge
+		if (PinValue == HAL_GPIO_LVL_HI)
+		{
+			// rising edge
+		}
+		else
+		{
+			// falling edge
+		}
+	}
 }
 
 
-void hal_interrupt_init(void)
+void hal_interrupt_Init(void)
 {
 	// register isr
 
+	hal_interrupt_initIVT();
+
 	//hal_interrupt_registerAndEnableIsr (HAL_INTERRUPT_ID_TIMER_0, Timer_ISR_function, 0, 0);
 
-	hal_interrupt_registerAndEnableIsr (HAL_INTERRUPT_ID_GPIO_0, GPIO_ISR_function, 0, 0);
+	hal_interrupt_RegisterAndEnableIsr (HAL_INTERRUPT_ID_GPIO_0, GPIO_ISR_function, 0, 0);
 
 }
 
@@ -117,17 +183,17 @@ static void hal_interrupt_isr_handleRange (unsigned long pending, const unsigned
 void hal_interrupt_isr (void)
 {
 	// page 112 https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
-	register unsigned long ulMaskedStatus = pRegs->IRQBasicPending;
+	register unsigned long ulMaskedStatus = hal_interrupt_regs->IRQBasicPending;
 
 	//
 
 	// Bit 8 in IRQBasic indicates interrupts in Pending1 (interrupts 0-31):
 	if (ulMaskedStatus & (1UL << 8))
-		hal_interrupt_isr_handleRange(pRegs->IRQPending1 & enabled[0], 0);
+		hal_interrupt_isr_handleRange(hal_interrupt_regs->IRQPending1 & enabled[0], 0);
 
 	// Bit 9 in IRQBasic indicates interrupts in Pending2 (interrupts 32-63):
 	if (ulMaskedStatus & (1UL << 9))
-		hal_interrupt_isr_handleRange(pRegs->IRQPending2 & enabled[1], 32);
+		hal_interrupt_isr_handleRange(hal_interrupt_regs->IRQPending2 & enabled[1], 32);
 
 	// Bits 7 through 0 in IRQBasic represent interrupts 64-71:
 	// 0	64	ARM Timer
@@ -141,27 +207,33 @@ void hal_interrupt_isr (void)
 	if (ulMaskedStatus & 0xFF)
 		hal_interrupt_isr_handleRange(ulMaskedStatus & 0xFF & enabled[2], 64);
 
+
 	// clear all remaining interrupt flags -> interrupt with no handler will not rise in series and block cpu
+
 	// debug: clear timer flag:
-	hal_armTimer_GetBase()->IRQClear = 1;
+
+	hal_armTimer_GetRegs()->IrqClear = 1;
+
+	hal_armTimer_ClearIrq();
+
     // gpio interrupts are clear by write a 1 to corresponding register (see p. 96)
     // clear pending gpio bits 0 ... 31
-    hal_gpio_getBase()->GPEDS[0] = 0xFFFFFFFFUL;
+	hal_gpio_GetRegs()->GPEDS[0] = 0xFFFFFFFFUL;
     // clear pending gpio bits 32 ... 53
-    hal_gpio_getBase()->GPEDS[1] = 0x001FFFFFUL;
+	hal_gpio_GetRegs()->GPEDS[1] = 0x001FFFFFUL;
 
 	// TODO: clear all other possibly occurring interrupts
 
 }
 
-void hal_interrupt_unblock (void)
+void hal_interrupt_UnblockIrq (void)
 {
 	// https://stackoverflow.com/questions/14950614/working-of-asm-volatile-memory
 	// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHBFEIB.html
 	asm volatile ("cpsie i" ::: "memory");
 }
 
-void hal_interrupt_block (void)
+void hal_interrupt_BlockIrq (void)
 {
 	// https://stackoverflow.com/questions/14950614/working-of-asm-volatile-memory
 	// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHBFEIB.html
@@ -171,56 +243,77 @@ void hal_interrupt_block (void)
 void hal_interrupt_resgisterIsr (const unsigned int irq, hal_interrupt_isr_t pfnHandler, void *pParam, unsigned int Enable)
 {
 	if (irq < HAL_INTERRUPT_ISR_COUNT) {
-		hal_interrupt_block();
+		hal_interrupt_BlockIrq();
 		hal_interrupt_isrArray[irq].pfnHandler = pfnHandler;
 		hal_interrupt_isrArray[irq].pParam     = pParam;
 		if(Enable)
-			hal_interrupt_unblock();
+			hal_interrupt_UnblockIrq();
 	}
 }
 
-void hal_interrupt_registerAndEnableIsr (const unsigned int irq, hal_interrupt_isr_t pfnHandler, void *pParam, unsigned int Enable)
+void hal_interrupt_RegisterAndEnableIsr (const unsigned int irq, hal_interrupt_isr_t pfnHandler, void *pParam, unsigned int Enable)
 {
 	hal_interrupt_resgisterIsr (irq, pfnHandler, pParam, 0);
-	hal_interrupt_enable(irq);
+	hal_interrupt_enableIRQ(irq);
 	if(Enable)
-		hal_interrupt_unblock();
+		hal_interrupt_UnblockIrq();
 }
 
-void hal_interrupt_enable (const unsigned int irq)
+void hal_interrupt_enableIRQ (const unsigned int irq)
 {
 	// write bit into enable register -> interrupt can occur in pending registers
 	unsigned long mask = 1UL << (irq % 32);
+	hal_base_t irqFlag;
 
-	if (irq <= 31) {
-		pRegs->EnableIRQs1 = mask;
-		enabled[0] |= mask;
+	if (irq < HAL_INTERRUPT_ISR_COUNT)
+	{
+		// check if interrupt are enabled
+		irqFlag = hal_interrupt_chackIrqFlag();
+		// disable interrupts
+		hal_interrupt_BlockIrq();
+
+		// check which register to write to
+		if (irq <= 31)
+		{
+			hal_interrupt_regs->EnableIRQs1 = mask;
+			enabled[0] |= mask;
+		}
+		else if (irq <= 63)
+		{
+			hal_interrupt_regs->EnableIRQs2 = mask;
+			enabled[1] |= mask;
+		}
+		else if (irq < HAL_INTERRUPT_ISR_COUNT)
+		{
+			hal_interrupt_regs->EnableBasicIRQs = mask;
+			enabled[2] |= mask;
+		}
+
+		// enable irq if interrupts was enabled
+		if(irqFlag != 0)
+		{
+			hal_interrupt_UnblockIrq();
+		}
 	}
-	else if (irq <= 63) {
-		pRegs->EnableIRQs2 = mask;
-		enabled[1] |= mask;
-	}
-	else if (irq < HAL_INTERRUPT_ISR_COUNT) {
-		pRegs->EnableBasicIRQs = mask;
-		enabled[2] |= mask;
-	}
+
+
 }
 
-void hal_interrupt_disable (const unsigned int irq)
+void hal_interrupt_DisableIRQ (const unsigned int irq)
 {
 	// write bit into disable register -> interrupt can not occur in pending registers
 	unsigned long mask = 1UL << (irq % 32);
 
 	if (irq <= 31) {
-		pRegs->DisableIRQs1 = mask;
+		hal_interrupt_regs->DisableIRQs1 = mask;
 		enabled[0] &= ~mask;
 	}
 	else if (irq <= 63) {
-		pRegs->DisableIRQs2 = mask;
+		hal_interrupt_regs->DisableIRQs2 = mask;
 		enabled[1] &= ~mask;
 	}
 	else if (irq < HAL_INTERRUPT_ISR_COUNT) {
-		pRegs->DisableBasicIRQs = mask;
+		hal_interrupt_regs->DisableBasicIRQs = mask;
 		enabled[2] &= ~mask;
 	}
 }

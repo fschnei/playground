@@ -5,6 +5,7 @@
 .global _get_stack_pointer
 .global _exception_table
 .global _enable_interrupts
+.global _reset_
 
 // From the ARM ARM (Architecture Reference Manual). Make sure you get the
 // ARMv5 documentation which includes the ARMv6 documentation which is the
@@ -31,7 +32,7 @@
 .equ	SCTLR_ENABLE_BRANCH_PREDICTION, 0x800
 .equ	SCTLR_ENABLE_INSTRUCTION_CACHE, 0x1000
 
-_start:
+/*_start:
     ldr pc, _reset_h
     ldr pc, _undefined_instruction_vector_h
     ldr pc, _software_interrupt_vector_h
@@ -48,14 +49,15 @@ _prefetch_abort_vector_h:           .word   prefetch_abort_vector
 _data_abort_vector_h:               .word   data_abort_vector
 _unused_handler_h:                  .word   unused_vector
 _interrupt_vector_h:                .word   interrupt_vector
-_fast_interrupt_vector_h:           .word   fast_interrupt_vector
+_fast_interrupt_vector_h:           .word   fast_interrupt_vector*/
 
+_start:
 _reset_:
     // We enter execution in supervisor mode. For more information on
     // processor modes see ARM Section A2.2 (Processor Modes)
 
 	// copy interrupt vector table from 0x8000 to 0x000
-    mov     r0, #0x8000
+    /*mov     r0, #0x8000
     mov     r1, #0x0000
 
     // copy process
@@ -70,7 +72,7 @@ _reset_:
     // stack pointer which differs to the application stack pointer:
     mov r0, #(CPSR_MODE_IRQ | CPSR_IRQ_INHIBIT | CPSR_FIQ_INHIBIT )
     msr cpsr_c, r0
-    mov sp, #0x7000
+    mov sp, #0x7000*/
 
     // Switch back to supervisor mode (our application mode) and
     // set the stack pointer. Remember that the stack works its way
@@ -122,7 +124,7 @@ _reset_:
 _inf_loop:
     b       _inf_loop
 
-
+/*
 _get_stack_pointer:
     // Return the stack pointer value
     str     sp, [sp]
@@ -144,17 +146,17 @@ bx lr
 .globl hal_GetCPSR
 hal_GetCPSR:
 	mrs     r0, cpsr
-	mov     pc, lr
-
+	mov     pc, lr*/
+/*
 _enable_interrupts:
     mrs     r0, cpsr
     bic     r0, r0, #0x80
     msr     cpsr_c, r0
 
-    mov     pc, lr
+    mov     pc, lr*/
 
 
-
+/*
 undefined_instruction_vector:
 	b undefined_instruction_vector
 
@@ -174,7 +176,7 @@ unused_vector:
 //	b interrupt_vector
 
 fast_interrupt_vector:
-	b fast_interrupt_vector
+	b fast_interrupt_vector*/
 
 hang:
 	b hang

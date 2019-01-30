@@ -2,13 +2,13 @@
 #include "rpi_gpio.h"
 
 
-static volatile bcm_gpio_regs_t * const hal_gpio_regs = (bcm_gpio_regs_t *) (HAL_GPIO_BASE);
+static volatile hal_gpio_regs_t * const hal_gpio_regs = (hal_gpio_regs_t *) (HAL_GPIO_BASE);
 
 
 // provide pinter to gpio registers via function
 // -> read only access to hal_gpio_regs
 // -> no change of hal_gpio_regs by mistake
-volatile bcm_gpio_regs_t* const hal_gpio_getBase(void)
+volatile hal_gpio_regs_t * const hal_gpio_GetRegs(void)
 {
     return hal_gpio_regs;
 }
@@ -16,7 +16,7 @@ volatile bcm_gpio_regs_t* const hal_gpio_getBase(void)
 
 void hal_gpio_SetPinFunction( rpi_gpio_pin_t gpio, rpi_gpio_alt_function_t func )
 {
-    rpi_reg_rw_t fsel_copy = hal_gpio_regs->GPFSEL[gpio/10];
+	hal_v_base_t fsel_copy = hal_gpio_regs->GPFSEL[gpio/10];
     fsel_copy &= ~( HAL_GPIO_FUNC_SEL_CLR_MASK << ( ( gpio % 10 ) * 3 ) );
     fsel_copy |= (func << ( ( gpio % 10 ) * 3 ) );
     hal_gpio_regs->GPFSEL[gpio/10] = fsel_copy;
@@ -122,12 +122,12 @@ void hal_gpio_SetValue( rpi_gpio_pin_t gpio, hal_gpio_level_t value )
 
 
 
-void hal_gpio_EnablePinInterrupt(unsigned int pinNum, enum DETECT_TYPE type)
+void hal_gpio_EnablePinInterrupt(unsigned int pinNum, hal_gpio_detectMode_t detectMode)
 {
 	unsigned long mask=(1<<pinNum);
 	unsigned long offset=pinNum/32;
 
-	switch(type) {
+	switch(detectMode) {
 	case HAL_GPIO_DETECT_RISING:
 		hal_gpio_regs->GPREN[offset]|=mask;
 		break;
@@ -151,12 +151,12 @@ void hal_gpio_EnablePinInterrupt(unsigned int pinNum, enum DETECT_TYPE type)
 	}
 }
 
-void hal_gpio_DisablePinInterrupt(unsigned int pinNum, enum DETECT_TYPE type)
+void hal_gpio_DisablePinInterrupt(unsigned int pinNum, hal_gpio_detectMode_t detectMode)
 {
 	unsigned long mask=~(1<<(pinNum%32));
 	unsigned long offset=pinNum/32;
 
-	switch(type) {
+	switch(detectMode) {
 	case HAL_GPIO_DETECT_RISING:
 		hal_gpio_regs->GPREN[offset]&=mask;
 		break;

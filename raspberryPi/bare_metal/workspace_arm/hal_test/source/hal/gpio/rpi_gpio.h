@@ -2,7 +2,7 @@
 #ifndef RPI_GPIO_H
 #define RPI_GPIO_H
 
-#include "../rpi-base.h"
+#include "../rpi_base.h"
 
 // gpio access works via memory mapped io
 // this is the base address for gpio pins
@@ -100,113 +100,34 @@ typedef enum {
     } rpi_gpio_pin_t;
 
 
-/** The GPIO Peripheral is described in section 6 of the BCM2835 Peripherals
-    documentation.
-
-    There are 54 general-purpose I/O (GPIO) lines split into two banks. All
-    GPIO pins have at least two alternative functions within BCM. The
-    alternate functions are usually peripheral IO and a single peripheral
-    may appear in each bank to allow flexibility on the choice of IO voltage.
-    Details of alternative functions are given in section 6.2. Alternative
-    Function Assignments.
-
-    The GPIO peripheral has three dedicated interrupt lines. These lines are
-    triggered by the setting of bits in the event detect status register. Each
-    bank has its’ own interrupt line with the third line shared between all
-    bits.
-
-    The Alternate function table also has the pull state (pull-up/pull-down)
-    which is applied after a power down. */
-/*typedef struct {
-    rpi_reg_rw_t    GPFSEL0;
-    rpi_reg_rw_t    GPFSEL1;
-    rpi_reg_rw_t    GPFSEL2;
-    rpi_reg_rw_t    GPFSEL3;
-    rpi_reg_rw_t    GPFSEL4;
-    rpi_reg_rw_t    GPFSEL5;
-    rpi_reg_ro_t    Reserved0;
-    rpi_reg_wo_t    GPSET0;
-    rpi_reg_wo_t    GPSET1;
-    rpi_reg_ro_t    Reserved1;
-    rpi_reg_wo_t    GPCLR0;
-    rpi_reg_wo_t    GPCLR1;
-    rpi_reg_ro_t    Reserved2;
-    rpi_reg_wo_t    GPLEV0;
-    rpi_reg_wo_t    GPLEV1;
-    rpi_reg_ro_t    Reserved3;
-    rpi_reg_wo_t    GPEDS0;
-    rpi_reg_wo_t    GPEDS1;
-    rpi_reg_ro_t    Reserved4;
-    rpi_reg_wo_t    GPREN0;
-    rpi_reg_wo_t    GPREN1;
-    rpi_reg_ro_t    Reserved5;
-    rpi_reg_wo_t    GPFEN0;
-    rpi_reg_wo_t    GPFEN1;
-    rpi_reg_ro_t    Reserved6;
-    rpi_reg_wo_t    GPHEN0;
-    rpi_reg_wo_t    GPHEN1;
-    rpi_reg_ro_t    Reserved7;
-    rpi_reg_wo_t    GPLEN0;
-    rpi_reg_wo_t    GPLEN1;
-    rpi_reg_ro_t    Reserved8;
-    rpi_reg_wo_t    GPAREN0;
-    rpi_reg_wo_t    GPAREN1;
-    rpi_reg_ro_t    Reserved9;
-    rpi_reg_wo_t    GPAFEN0;
-    rpi_reg_wo_t    GPAFEN1;
-    rpi_reg_ro_t    Reserved10;
-    rpi_reg_wo_t    GPPUD;
-    rpi_reg_wo_t    GPPUDCLK0;
-    rpi_reg_wo_t    GPPUDCLK1;
-    rpi_reg_ro_t    Reserved11;
-    } rpi_gpio_t;*/
-
-/** The GPIO Peripheral is described in section 6 of the BCM2835 Peripherals
-	documentation.
-
-	There are 54 general-purpose I/O (GPIO) lines split into two banks. All
-	GPIO pins have at least two alternative functions within BCM. The
-	alternate functions are usually peripheral IO and a single peripheral
-	may appear in each bank to allow flexibility on the choice of IO voltage.
-	Details of alternative functions are given in section 6.2. Alternative
-	Function Assignments.
-
-	The GPIO peripheral has three dedicated interrupt lines. These lines are
-	triggered by the setting of bits in the event detect status register. Each
-	bank has its’ own interrupt line with the third line shared between all
-	bits.
-
-	The Alternate function table also has the pull state (pull-up/pull-down)
-	which is applied after a power down. */
-
 // see page 90 https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
 typedef struct {
-	rpi_reg_rw_t	GPFSEL[6];		// Function Select
-	rpi_reg_ro_t	Reserved_1;
-	rpi_reg_wo_t	GPSET[2];		// Pin Output Set
-	rpi_reg_ro_t	Reserved_2;
-	rpi_reg_wo_t	GPCLR[2];		// Pin Output Clear
-	rpi_reg_ro_t	Reserved_3;
-	rpi_reg_wo_t	GPLEV[2];		// Pin Level
-	rpi_reg_ro_t	Reserved_4;
-	rpi_reg_wo_t	GPEDS[2];		// Pin Event Detect Status
-	rpi_reg_ro_t	Reserved_5;
-	rpi_reg_wo_t	GPREN[2];		// Pin Rising Edge Detect Enable
-	rpi_reg_ro_t	Reserved_6;
-	rpi_reg_wo_t	GPFEN[2];		// Pin Falling Edge Detect Enable
-	rpi_reg_ro_t	Reserved_7;
-	rpi_reg_wo_t	GPHEN[2];		// Pin High Detect Enable
-	rpi_reg_ro_t	Reserved_8;
-	rpi_reg_wo_t	GPLEN[2];		// Pin Low Detect Enable
-	rpi_reg_ro_t	Reserved_9;
-	rpi_reg_wo_t	GPAREN[2];		// Pin Async. Rising Edge Detect
-	rpi_reg_ro_t	Reserved_A;
-	rpi_reg_wo_t	GPAFEN[2];		// Pin Async. Falling Edge Detect
-	rpi_reg_ro_t	Reserved_B;
-	rpi_reg_wo_t	GPPUD[1];		// Pin Pull-up/down Enable
-	rpi_reg_wo_t	GPPUDCLK[2];	// Pin Pull-up/down Enable Clock
-	rpi_reg_ro_t	Reserved_C;
-} bcm_gpio_regs_t;
+	hal_reg_rw_t	GPFSEL[6];		// Function Select
+	hal_reg_r_t	Reserved_1;
+	hal_reg_w_t	GPSET[2];		// Pin Output Set
+	hal_reg_r_t	Reserved_2;
+	hal_reg_w_t	GPCLR[2];		// Pin Output Clear
+	hal_reg_r_t	Reserved_3;
+	hal_reg_w_t	GPLEV[2];		// Pin Level
+	hal_reg_r_t	Reserved_4;
+	hal_reg_w_t	GPEDS[2];		// Pin Event Detect Status
+	hal_reg_r_t	Reserved_5;
+	hal_reg_w_t	GPREN[2];		// Pin Rising Edge Detect Enable
+	hal_reg_r_t	Reserved_6;
+	hal_reg_w_t	GPFEN[2];		// Pin Falling Edge Detect Enable
+	hal_reg_r_t	Reserved_7;
+	hal_reg_w_t	GPHEN[2];		// Pin High Detect Enable
+	hal_reg_r_t	Reserved_8;
+	hal_reg_w_t	GPLEN[2];		// Pin Low Detect Enable
+	hal_reg_r_t	Reserved_9;
+	hal_reg_w_t	GPAREN[2];		// Pin Async. Rising Edge Detect
+	hal_reg_r_t	Reserved_A;
+	hal_reg_w_t	GPAFEN[2];		// Pin Async. Falling Edge Detect
+	hal_reg_r_t	Reserved_B;
+	hal_reg_w_t	GPPUD[1];		// Pin Pull-up/down Enable
+	hal_reg_w_t	GPPUDCLK[2];	// Pin Pull-up/down Enable Clock
+	hal_reg_r_t	Reserved_C;
+} hal_gpio_regs_t;
 
 
 typedef enum {
@@ -215,9 +136,9 @@ typedef enum {
 	HAL_GPIO_LVL_ON,	// TODO: is this necessary ?
 	HAL_GPIO_LVL_OFF,	// TODO: is this necessary ?
 	HAL_GPIO_LVL_UNKNOWN,
-    } hal_gpio_level_t;
+} hal_gpio_level_t;
 
-enum DETECT_TYPE {
+typedef enum {
 	HAL_GPIO_DETECT_NONE,
 	HAL_GPIO_DETECT_RISING,
 	HAL_GPIO_DETECT_FALLING,
@@ -225,11 +146,11 @@ enum DETECT_TYPE {
 	HAL_GPIO_DETECT_LOW,
 	HAL_GPIO_DETECT_RISING_ASYNC,
 	HAL_GPIO_DETECT_FALLING_ASYNC
-};
+} hal_gpio_detectMode_t;
 
 
 
-volatile bcm_gpio_regs_t * const hal_gpio_getBase(void);
+volatile hal_gpio_regs_t * const hal_gpio_GetRegs(void);
 
 void hal_gpio_SetPinFunction( rpi_gpio_pin_t gpio, rpi_gpio_alt_function_t func );
 void hal_gpio_SetOutput( rpi_gpio_pin_t gpio );
@@ -244,8 +165,8 @@ void hal_gpio_Toggle( rpi_gpio_pin_t gpio );
 
 // see p. 96 ff. https://www.raspberrypi.org/app/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
 /* Interrupt related functions */
-void hal_gpio_EnablePinInterrupt	(unsigned int pinNum, enum DETECT_TYPE type);
-void hal_gpio_DisablePinInterrupt	(unsigned int pinNum, enum DETECT_TYPE type);
+void hal_gpio_EnablePinInterrupt	(unsigned int pinNum, hal_gpio_detectMode_t detectMode);
+void hal_gpio_DisablePinInterrupt	(unsigned int pinNum, hal_gpio_detectMode_t detectMode);
 void hal_gpio_ClearInterrupt		(unsigned int pinNum);
 
 

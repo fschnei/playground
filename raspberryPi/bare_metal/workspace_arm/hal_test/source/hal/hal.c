@@ -8,17 +8,17 @@
 #include "hal.h"
 
 #include "interrupt/rpi_interrupts.h"
-#include "../asm_prototypes.h"
 
-void hal_init(void)
+
+void hal_Init(void)
 {
-	volatile unsigned long buffer_cpsr;
+	//volatile unsigned long buffer_cpsr;
 
 	/* Write 1 to the LED init nibble in the Function Select GPIO
 	   peripheral register to enable LED pin as an output */
 	//RPI_GetGpio()->LED_GPFSEL |= LED_GPFBIT;
 
-	buffer_cpsr = hal_GetCPSR();
+	//buffer_cpsr = hal_GetCPSR();
 
 	//extern void RPI_SetGpioOutput( rpi_gpio_pin_t gpio );
 	hal_gpio_SetInput( HAL_GPIO_PIN5 );
@@ -43,28 +43,28 @@ void hal_init(void)
 			RPI_ARMTIMER_CTRL_INT_ENABLE |
 			RPI_ARMTIMER_CTRL_PRESCALE_256;*/
 
-	buffer_cpsr = hal_GetCPSR();
+	//buffer_cpsr = hal_GetCPSR();
 
 	//EnableGpioDetect(unsigned int pinNum, enum DETECT_TYPE type)
 	hal_gpio_EnablePinInterrupt(HAL_GPIO_PIN5, HAL_GPIO_DETECT_RISING);
 
-	buffer_cpsr = hal_GetCPSR();
+	//buffer_cpsr = hal_GetCPSR();
 
-	hal_interrupt_init();
+	hal_interrupt_Init();
 
-	buffer_cpsr = hal_GetCPSR();
+	//buffer_cpsr = hal_GetCPSR();
 
 
 	//PUT32(GPIO_GPREN_0, 0x20UL);
 	//PUT32(INTERRUPT_ENABLE_2, ( 1UL << ( 17 ) ));
 
-	buffer_cpsr = hal_GetCPSR();
+	//buffer_cpsr = hal_GetCPSR();
 
 
 	// Enable interrupts!
-	hal_interrupt_unblock();
+	hal_interrupt_UnblockIrq();
 
-	buffer_cpsr = hal_GetCPSR();
+	//buffer_cpsr = hal_GetCPSR();
 }
 
 

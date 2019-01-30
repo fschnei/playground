@@ -2,24 +2,26 @@
 #ifndef RPI_SYSTIMER_H
 #define RPI_SYSTIMER_H
 
-#include "../../int_types.h"
-#include "../rpi-base.h"
+#include "../rpi_base.h"
 
-#define RPI_SYSTIMER_BASE       ( HAL_RPI_PERIPHERAL_BASE + 0x3000 )
+#define HAL_SYSTIMER_BASE       ( HAL_RPI_PERIPHERAL_BASE + 0x3000UL )
 
 
 typedef struct {
-    volatile uint32_t control_status;
-    volatile uint32_t counter_lo;
-    volatile uint32_t counter_hi;
-    volatile uint32_t compare0;
-    volatile uint32_t compare1;
-    volatile uint32_t compare2;
-    volatile uint32_t compare3;
-    } rpi_sys_timer_t;
+	hal_reg_rw_t control_status;
+	hal_reg_rw_t counter_lo;
+	hal_reg_rw_t counter_hi;
+	hal_reg_rw_t compare0;
+	hal_reg_rw_t compare1;
+	hal_reg_rw_t compare2;
+	hal_reg_rw_t compare3;
+} hal_sysTimer_regs_t;
 
 
-extern rpi_sys_timer_t* RPI_GetSystemTimer(void);
-extern void RPI_WaitMicroSeconds( uint32_t us );
+
+volatile hal_sysTimer_regs_t * hal_sysTimer_GetRegs(void);
+
+void hal_sysTimer_WaitMicroSeconds( hal_base_t us );
+
 
 #endif

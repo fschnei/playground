@@ -1,21 +1,22 @@
 
 #include "rpi_sysTimer.h"
 
-#include "../../int_types.h"
 
-static rpi_sys_timer_t* rpiSystemTimer = (rpi_sys_timer_t*)RPI_SYSTIMER_BASE;
 
-rpi_sys_timer_t* RPI_GetSystemTimer(void)
+static volatile hal_sysTimer_regs_t * const hal_sysTimer_regs = (hal_sysTimer_regs_t * )HAL_SYSTIMER_BASE;
+
+
+volatile hal_sysTimer_regs_t * hal_sysTimer_GetRegs(void)
 {
-    return rpiSystemTimer;
+    return hal_sysTimer_regs;
 }
 
-void RPI_WaitMicroSeconds( uint32_t us )
+void hal_sysTimer_WaitMicroSeconds( hal_base_t us )
 {
-    volatile uint32_t ts = rpiSystemTimer->counter_lo;
+	hal_v_base_t ts = hal_sysTimer_regs->counter_lo;
 
-    while( ( rpiSystemTimer->counter_lo - ts ) < us )
+    while( ( hal_sysTimer_regs->counter_lo - ts ) < us )
     {
-        /* BLANK */
+        // nop
     }
 }

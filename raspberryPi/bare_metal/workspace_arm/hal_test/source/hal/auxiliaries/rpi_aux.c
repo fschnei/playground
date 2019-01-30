@@ -1,7 +1,7 @@
 
 #include "../gpio/rpi_gpio.h"
-#include "../rpi-base.h"
 #include "rpi_aux.h"
+#include "../rpi_base.h"
 
 static aux_t* auxillary = (aux_t*)AUX_BASE;
 
@@ -14,7 +14,7 @@ aux_t* RPI_GetAux( void )
 /* Define the system clock frequency in MHz for the baud rate calculation.
    This is clearly defined on the BCM2835 datasheet errata page:
    http://elinux.org/BCM2835_datasheet_errata */
-#define SYS_FREQ    250000000
+//#define SYS_FREQ    250000000
 
 void RPI_AuxMiniUartInit( int baud, int bits )
 {
@@ -58,11 +58,11 @@ void RPI_AuxMiniUartInit( int baud, int bits )
     hal_gpio_SetPinFunction( HAL_GPIO_PIN14, HAL_GPIO_FUNC_SEL_ALT5 );
     hal_gpio_SetPinFunction( HAL_GPIO_PIN15, HAL_GPIO_FUNC_SEL_ALT5 );
 
-    hal_gpio_getBase()->GPPUD[0] = 0;
+    hal_gpio_GetRegs()->GPPUD[0] = 0;
     for( i=0; i<150; i++ ) { }
-    hal_gpio_getBase()->GPPUDCLK[0] = ( 1 << 14 );
+    hal_gpio_GetRegs()->GPPUDCLK[0] = ( 1 << 14 );
     for( i=0; i<150; i++ ) { }
-    hal_gpio_getBase()->GPPUDCLK[0] = 0;
+    hal_gpio_GetRegs()->GPPUDCLK[0] = 0;
 
     /* Disable flow control,enable transmitter and receiver! */
     auxillary->MU_CNTL = AUX_MUCNTL_TX_ENABLE;
@@ -71,13 +71,12 @@ void RPI_AuxMiniUartInit( int baud, int bits )
 
 void RPI_AuxMiniUartWrite( char c )
 {
-    /* Wait until the UART has an empty space in the FIFO */
     while( ( auxillary->MU_LSR & AUX_MULSR_TX_EMPTY ) == 0 ) { }
 
-    /* Write the character to the FIFO for transmission */
     auxillary->MU_IO = c;
 }
 
+/*
 int _write( int file, char *ptr, int len )
 {
     int todo;
@@ -86,5 +85,5 @@ int _write( int file, char *ptr, int len )
     	RPI_AuxMiniUartWrite(*ptr++);
 
     return len;
-}
+}*/
 

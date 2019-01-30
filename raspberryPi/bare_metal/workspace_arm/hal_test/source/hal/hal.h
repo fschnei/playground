@@ -16,7 +16,7 @@
 #include "sys_timer/rpi_sysTimer.h"
 
 
-void hal_init(void);
+void hal_Init(void);
 
 
 #endif /* _HAL_H_ */
