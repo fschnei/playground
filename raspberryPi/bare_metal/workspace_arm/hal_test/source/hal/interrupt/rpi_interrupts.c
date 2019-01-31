@@ -69,7 +69,7 @@ hal_base_t hal_interrupt_chackIrqFlag()
 void Timer_ISR_function(unsigned int irq, void *pParam)
 {
 	hal_armTimer_GetRegs()->IrqClear = 1;
-    RPI_AuxMiniUartWrite( 'A' );
+	hal_auxiliaries_MiniUartWrite( 'A' );
 }
 
 void GPIO_ISR_function(unsigned int irq, void * pParam)

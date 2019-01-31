@@ -10,7 +10,11 @@
    the elinux BCM2835 datasheet errata:
    http://elinux.org/BCM2835_datasheet_errata */
 
-#define AUX_BASE    ( HAL_RPI_PERIPHERAL_BASE + 0x215000 )
+
+// !!! errata:
+// http://elinux.org/BCM2835_datasheet_errata
+
+#define HAL_AUXILIARIES_BASE    	( HAL_RPI_PERIPHERAL_BASE + 0x215000 )
 
 #define AUX_ENA_MINIUART            ( 1 << 0 )
 #define AUX_ENA_SPI1                ( 1 << 1 )
@@ -116,43 +120,56 @@
 #define FSEL53(x)       ( x << 9 )
 
 
+// TODO: check this stuff (register ordering, count of reserved bytes)
 typedef struct {
-    volatile unsigned int IRQ;
-    volatile unsigned int ENABLES;
+	hal_reg_r_t Irq;				// 0xXX215000
+	hal_reg_rw_t Enable;			// 0xXX215004
 
-    volatile unsigned int reserved1[((0x40 - 0x04) / 4) - 1];
+    // create offset
+	hal_reg_rw_t reserved1[((0x40 - 0x04) / 4) - 1];	// 0xXX215008 - 0xXX21503C
 
-    volatile unsigned int MU_IO;
-    volatile unsigned int MU_IER;
-    volatile unsigned int MU_IIR;
-    volatile unsigned int MU_LCR;
-    volatile unsigned int MU_MCR;
-    volatile unsigned int MU_LSR;
-    volatile unsigned int MU_MSR;
-    volatile unsigned int MU_SCRATCH;
-    volatile unsigned int MU_CNTL;
-    volatile unsigned int MU_STAT;
-    volatile unsigned int MU_BAUD;
+	// mini uart
+    hal_reg_rw_t MiniUart_Io;		// 0xXX215040
+    hal_reg_rw_t MiniUart_IER;		// 0xXX215044	// http://elinux.org/BCM2835_datasheet_errata
+    hal_reg_rw_t MiniUart_IIR;		// 0xXX215048	// http://elinux.org/BCM2835_datasheet_errata
+    hal_reg_rw_t MiniUart_LCR;		// 0xXX21504C
+    hal_reg_rw_t MiniUart_MCR;		// 0xXX215050
+    hal_reg_r_t MiniUart_LSR;		// 0xXX215054
+    hal_reg_r_t MiniUart_MSR;		// 0xXX215058
+    hal_reg_rw_t MiniUart_SCRATCH;	// 0xXX21505C
+    hal_reg_rw_t MiniUart_CNTL;		// 0xXX215060
+    hal_reg_r_t MiniUart_STAT;		// 0xXX215064
+    hal_reg_rw_t MiniUart_BAUD;		// 0xXX215068
 
-    volatile unsigned int reserved2[(0x80 - 0x68) / 4];
+    // create offset
+    hal_reg_rw_t reserved2[(0x80 - 0x68) / 4];			// 0xXX21506C - 0xXX21507C
 
-    volatile unsigned int SPI0_CNTL0;
-    volatile unsigned int SPI0_CNTL1;
-    volatile unsigned int SPI0_STAT;
-    volatile unsigned int SPI0_IO;
-    volatile unsigned int SPI0_PEEK;
+    // SPI 0
+    hal_reg_rw_t SPI1_CNTL0;		// 0xXX215080
+    hal_reg_rw_t SPI1_CNTL1;		// 0xXX215084
+    hal_reg_rw_t SPI1_STAT;			// 0xXX215088
+    hal_reg_rw_t reserved2_;		// 0xXX21508C
+    hal_reg_r_t SPI1_IO;			// 0xXX215090 or 0xXX21508C ? // http://elinux.org/BCM2835_datasheet_errata
+    hal_reg_rw_t SPI1_PEEK;			// 0xXX215094 or 0xXX215090 ? // http://elinux.org/BCM2835_datasheet_errata
 
-    volatile unsigned int reserved3[(0xC0 - 0x94) / 4];
+    // create offset
+    hal_reg_rw_t reserved3[(0xC0 - 0x94) / 4];			// 0xXX2150A4 - 0xXX2150BC
 
-    volatile unsigned int SPI1_CNTL0;
-    volatile unsigned int SPI1_CNTL1;
-    volatile unsigned int SPI1_STAT;
-    volatile unsigned int SPI1_IO;
-    volatile unsigned int SPI1_PEEK;
-    } aux_t;
+    // SPI 1
+    hal_reg_rw_t SPI2_CNTL0;		// 0xXX2150C0
+    hal_reg_rw_t SPI2_CNTL1;		// 0xXX2150C4
+    hal_reg_rw_t SPI2_STAT;			// 0xXX2150C8
+    hal_reg_rw_t reserved3_;		// 0xXX2150CC
+    hal_reg_r_t SPI2_IO;			// 0xXX2150D0 or 0xXX2150CC ? // http://elinux.org/BCM2835_datasheet_errata
+    hal_reg_rw_t SPI2_PEEK;			// 0xXX2150D4 or 0xXX2150D0 ? // http://elinux.org/BCM2835_datasheet_errata
+} hal_auxiliaries_regs_t;
 
-extern aux_t* RPI_GetAux( void );
-extern void RPI_AuxMiniUartInit( int baud, int bits );
-extern void RPI_AuxMiniUartWrite( char c );
 
-#endif
+hal_auxiliaries_regs_t * hal_auxiliaries_GetRegs( void );
+
+void hal_auxiliaries_MiniUartInit( int baud, int bits );
+
+void hal_auxiliaries_MiniUartWrite( char c );
+
+
+#endif // RPI_AUX_H

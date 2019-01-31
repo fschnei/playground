@@ -7,8 +7,7 @@
 // see section 14
 #define HAL_ARMTIMER_BASE               ( HAL_RPI_PERIPHERAL_BASE + 0xB400UL )
 
-// 0: 16-bit counter
-// 1: 23-bit counter
+
 #define HAL_ARMTIMER_CTRL_WIDTHBIT16	( 0 << 1 )
 #define HAL_ARMTIMER_CTRL_WIDTHBIT23	( 1 << 1 )
 

@@ -18,6 +18,6 @@ void application_main()
     	//RPI_SetGpioHi( RPI_GPIO5 );
     	//RPI_WaitMicroSeconds( 1000000 );
 
-    	RPI_AuxMiniUartWrite( 'A' );
+    	hal_auxiliaries_MiniUartWrite( 'A' );
     }
 }
