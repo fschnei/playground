@@ -10,6 +10,8 @@
 
 void hal_Init(void)
 {
+
+
 	//volatile unsigned long buffer_cpsr;
 
 	/* Write 1 to the LED init nibble in the Function Select GPIO

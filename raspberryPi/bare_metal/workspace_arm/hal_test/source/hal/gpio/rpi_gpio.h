@@ -41,6 +41,7 @@ typedef enum {
 // see page 92 https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
 #define HAL_GPIO_FUNC_SEL_CLR_MASK     (7)
 
+#define HAL_GPIO_COUNT 53
 
 typedef enum {
     HAL_GPIO_PIN0 = 0,
@@ -148,9 +149,15 @@ typedef enum {
 	HAL_GPIO_DETECT_FALLING_ASYNC
 } hal_gpio_detectMode_t;
 
+typedef enum {
+	HAL_GPIO_PULLMODE_UP,
+	HAL_GPIO_PULLMODE_DOWN,
+	HAL_GPIO_PULLMODE_DISABLE,
+} hal_gpio_pullupdown_t;
 
+volatile hal_gpio_regs_t * const hal_gpio_GetRegs( void );
 
-volatile hal_gpio_regs_t * const hal_gpio_GetRegs(void);
+hal_base_t hal_gpio_SetPullUpDown( rpi_gpio_pin_t gpio, hal_gpio_pullupdown_t UpDown );
 
 void hal_gpio_SetPinFunction( rpi_gpio_pin_t gpio, rpi_gpio_alt_function_t func );
 void hal_gpio_SetOutput( rpi_gpio_pin_t gpio );
@@ -165,9 +172,9 @@ void hal_gpio_Toggle( rpi_gpio_pin_t gpio );
 
 // see p. 96 ff. https://www.raspberrypi.org/app/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
 /* Interrupt related functions */
-void hal_gpio_EnablePinInterrupt	(unsigned int pinNum, hal_gpio_detectMode_t detectMode);
-void hal_gpio_DisablePinInterrupt	(unsigned int pinNum, hal_gpio_detectMode_t detectMode);
-void hal_gpio_ClearInterrupt		(unsigned int pinNum);
+void hal_gpio_EnablePinInterrupt	( unsigned int pinNum, hal_gpio_detectMode_t detectMode );
+void hal_gpio_DisablePinInterrupt	( unsigned int pinNum, hal_gpio_detectMode_t detectMode );
+void hal_gpio_ClearInterrupt		( unsigned int pinNum );
 
 
 #endif

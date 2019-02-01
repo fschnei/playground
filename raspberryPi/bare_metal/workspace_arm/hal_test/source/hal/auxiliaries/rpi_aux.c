@@ -1,7 +1,6 @@
 
 #include "../gpio/rpi_gpio.h"
 #include "rpi_aux.h"
-#include "../rpi_base.h"
 
 static hal_auxiliaries_regs_t * hal_auxillary_regs = (hal_auxiliaries_regs_t *)HAL_AUXILIARIES_BASE;
 
@@ -49,12 +48,9 @@ void hal_auxiliaries_MiniUartInit( int baud, int bits )
     hal_gpio_SetPinFunction( HAL_GPIO_PIN14, HAL_GPIO_FUNC_SEL_ALT5 );
     hal_gpio_SetPinFunction( HAL_GPIO_PIN15, HAL_GPIO_FUNC_SEL_ALT5 );
 
-    //
-    hal_gpio_GetRegs()->GPPUD[0] = 0;
-    for( i=0; i<150; i++ ) { }
-    hal_gpio_GetRegs()->GPPUDCLK[0] = ( 1 << 14 );
-    for( i=0; i<150; i++ ) { }
-    hal_gpio_GetRegs()->GPPUDCLK[0] = 0;
+
+    // set pullup for gpios
+    volatile hal_base_t test = hal_gpio_SetPullUpDown( HAL_GPIO_PIN14, HAL_GPIO_PULLMODE_UP );
 
     // enable mini uart tx
     hal_auxillary_regs->MiniUart_CNTL = AUX_MUCNTL_TX_ENABLE;
