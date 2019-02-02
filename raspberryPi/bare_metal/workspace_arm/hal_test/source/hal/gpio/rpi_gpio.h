@@ -8,41 +8,39 @@
 // this is the base address for gpio pins
 #define HAL_GPIO_BASE       ( HAL_RPI_PERIPHERAL_BASE + 0x200000UL )
 
-#if defined( RPIBPLUS ) || defined( RPI2 )
-    #define LED_GPFSEL      GPFSEL4
-    #define LED_GPFBIT      21
-    #define LED_GPSET       GPSET1
-    #define LED_GPCLR       GPCLR1
-    #define LED_GPIO_BIT    15
-    //#define LED_ON()        do { RPI_GetGpio()->LED_GPCLR = ( 1 << LED_GPIO_BIT ); } while( 0 )
-    //#define LED_OFF()       do { RPI_GetGpio()->LED_GPSET = ( 1 << LED_GPIO_BIT ); } while( 0 )
-#else
-    #define LED_GPFSEL      GPFSEL1
-    #define LED_GPFBIT      18
-    #define LED_GPSET       GPSET0
-    #define LED_GPCLR       GPCLR0
-    #define LED_GPIO_BIT    16
-    //#define LED_ON()        do { RPI_GetGpio()->LED_GPSET = ( 1 << LED_GPIO_BIT ); } while( 0 )
-    //#define LED_OFF()       do { RPI_GetGpio()->LED_GPCLR = ( 1 << LED_GPIO_BIT ); } while( 0 )
-#endif
-
-typedef enum {
-	HAL_GPIO_FUNC_SEL_INPUT = 0,
-	HAL_GPIO_FUNC_SEL_OUTPUT,
-	HAL_GPIO_FUNC_SEL_ALT5,
-	HAL_GPIO_FUNC_SEL_ALT4,
-	HAL_GPIO_FUNC_SEL_ALT0,
-	HAL_GPIO_FUNC_SEL_ALT1,
-	HAL_GPIO_FUNC_SEL_ALT2,
-	HAL_GPIO_FUNC_SEL_ALT3,
-	HAL_GPIO_FUNC_SEL_LASTENTRY,
-    } rpi_gpio_alt_function_t;
-
 // A mask to be able to clear the bits in the register before setting the value we require
 // see page 92 https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
 #define HAL_GPIO_FUNC_SEL_CLR_MASK     (7)
 
-//#define HAL_GPIO_COUNT 53
+
+// see page 90 https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
+typedef struct {
+	hal_reg_rw_t	GPFSEL[6];		// Function Select
+	hal_reg_r_t	Reserved_1;
+	hal_reg_w_t	GPSET[2];		// Pin Output Set
+	hal_reg_r_t	Reserved_2;
+	hal_reg_w_t	GPCLR[2];		// Pin Output Clear
+	hal_reg_r_t	Reserved_3;
+	hal_reg_w_t	GPLEV[2];		// Pin Level
+	hal_reg_r_t	Reserved_4;
+	hal_reg_w_t	GPEDS[2];		// Pin Event Detect Status
+	hal_reg_r_t	Reserved_5;
+	hal_reg_w_t	GPREN[2];		// Pin Rising Edge Detect Enable
+	hal_reg_r_t	Reserved_6;
+	hal_reg_w_t	GPFEN[2];		// Pin Falling Edge Detect Enable
+	hal_reg_r_t	Reserved_7;
+	hal_reg_w_t	GPHEN[2];		// Pin High Detect Enable
+	hal_reg_r_t	Reserved_8;
+	hal_reg_w_t	GPLEN[2];		// Pin Low Detect Enable
+	hal_reg_r_t	Reserved_9;
+	hal_reg_w_t	GPAREN[2];		// Pin Async. Rising Edge Detect
+	hal_reg_r_t	Reserved_A;
+	hal_reg_w_t	GPAFEN[2];		// Pin Async. Falling Edge Detect
+	hal_reg_r_t	Reserved_B;
+	hal_reg_w_t	GPPUD[1];		// Pin Pull-up/down Enable
+	hal_reg_w_t	GPPUDCLK[2];	// Pin Pull-up/down Enable Clock
+	hal_reg_r_t	Reserved_C;
+} hal_gpio_regs_t;
 
 typedef enum {
     HAL_GPIO_PIN0 = 0,
@@ -100,38 +98,19 @@ typedef enum {
     HAL_GPIO_PIN52,
     HAL_GPIO_PIN53,
 	HAL_GPIO_LASTENTRY,
-    } rpi_gpio_pin_t;
+} rpi_gpio_pin_t;
 
-
-// see page 90 https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
-typedef struct {
-	hal_reg_rw_t	GPFSEL[6];		// Function Select
-	hal_reg_r_t	Reserved_1;
-	hal_reg_w_t	GPSET[2];		// Pin Output Set
-	hal_reg_r_t	Reserved_2;
-	hal_reg_w_t	GPCLR[2];		// Pin Output Clear
-	hal_reg_r_t	Reserved_3;
-	hal_reg_w_t	GPLEV[2];		// Pin Level
-	hal_reg_r_t	Reserved_4;
-	hal_reg_w_t	GPEDS[2];		// Pin Event Detect Status
-	hal_reg_r_t	Reserved_5;
-	hal_reg_w_t	GPREN[2];		// Pin Rising Edge Detect Enable
-	hal_reg_r_t	Reserved_6;
-	hal_reg_w_t	GPFEN[2];		// Pin Falling Edge Detect Enable
-	hal_reg_r_t	Reserved_7;
-	hal_reg_w_t	GPHEN[2];		// Pin High Detect Enable
-	hal_reg_r_t	Reserved_8;
-	hal_reg_w_t	GPLEN[2];		// Pin Low Detect Enable
-	hal_reg_r_t	Reserved_9;
-	hal_reg_w_t	GPAREN[2];		// Pin Async. Rising Edge Detect
-	hal_reg_r_t	Reserved_A;
-	hal_reg_w_t	GPAFEN[2];		// Pin Async. Falling Edge Detect
-	hal_reg_r_t	Reserved_B;
-	hal_reg_w_t	GPPUD[1];		// Pin Pull-up/down Enable
-	hal_reg_w_t	GPPUDCLK[2];	// Pin Pull-up/down Enable Clock
-	hal_reg_r_t	Reserved_C;
-} hal_gpio_regs_t;
-
+typedef enum {
+	HAL_GPIO_FUNC_SEL_INPUT = 0,
+	HAL_GPIO_FUNC_SEL_OUTPUT,
+	HAL_GPIO_FUNC_SEL_ALT5,
+	HAL_GPIO_FUNC_SEL_ALT4,
+	HAL_GPIO_FUNC_SEL_ALT0,
+	HAL_GPIO_FUNC_SEL_ALT1,
+	HAL_GPIO_FUNC_SEL_ALT2,
+	HAL_GPIO_FUNC_SEL_ALT3,
+	HAL_GPIO_FUNC_SEL_LASTENTRY,
+} rpi_gpio_alt_function_t;
 
 typedef enum {
 	HAL_GPIO_LVL_LO = 0,
@@ -157,6 +136,7 @@ typedef enum {
 	HAL_GPIO_PULLMODE_DISABLE,
 	HAL_GPIO_PULLMODE_LASTENTRY,
 } hal_gpio_pullupdown_t;
+
 
 volatile hal_gpio_regs_t * const hal_gpio_GetRegs( void );
 
