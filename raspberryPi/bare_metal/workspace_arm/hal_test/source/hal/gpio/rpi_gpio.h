@@ -4,14 +4,6 @@
 
 #include "../rpi_base.h"
 
-// gpio access works via memory mapped io
-// this is the base address for gpio pins
-#define HAL_GPIO_BASE       ( HAL_RPI_PERIPHERAL_BASE + 0x200000UL )
-
-// A mask to be able to clear the bits in the register before setting the value we require
-// see page 92 https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
-#define HAL_GPIO_FUNC_SEL_CLR_MASK     (7)
-
 
 // see page 90 https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
 typedef struct {
