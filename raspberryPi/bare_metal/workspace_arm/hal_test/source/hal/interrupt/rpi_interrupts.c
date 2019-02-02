@@ -14,13 +14,15 @@
 #include "../gpio/rpi_gpio.h"
 #include "../hwBasic/rpi_hwBasic.h"
 
+#define HAL_INTERRUPT_BASE			(HAL_RPI_PERIPHERAL_BASE + 0x0000B200UL)
 
 
 
 extern void hal_interrupt_initIVT(void);
 
-void hal_interrupt_resgisterIsr (const unsigned int irq, hal_interrupt_isr_t pfnHandler, void *pParam, unsigned int Enable);
-void hal_interrupt_enableIRQ	(const unsigned int irq);
+static hal_base_t hal_interrupt_CheckIrqFlag( void );
+static hal_error_status_t hal_interrupt_resgisterIsr (const hal_interrupt_source_t irq, hal_interrupt_isr_t pfnHandler, void *pParam);
+static hal_error_status_t hal_interrupt_enableIRQ	(const hal_interrupt_source_t irq);
 // this type holds the callback address of the isr and a pointer to a parameter
 
 // add a isr of this type by calling hal_interrupt_registerAndEnableIsr
@@ -33,17 +35,13 @@ typedef struct {
 // 0...31 -> pending, enable, disable 0 registers
 // 32..63 -> pending, enable, disable 1 registers
 // 64..73 -> pending, enable, disable basic (2) registers
-static hal_interrupt_isrPlusParms_t hal_interrupt_isrArray[HAL_INTERRUPT_ISR_COUNT];
-
-
-
-
+static hal_interrupt_isrPlusParms_t hal_interrupt_isrArray[HAL_INTERRUPT_ID_lASTENTRY];
 
 //static volatile hal_interrupt_regs_t * const pRegs = (hal_interrupt_regs_t *) (HAL_INTERRUPT_BASE);
 static volatile hal_interrupt_regs_t * const hal_interrupt_regs = (hal_interrupt_regs_t *) (HAL_INTERRUPT_BASE);
 
 // remember which interrupts have been enabled (in pending register (0,1) and basic pending register (2)):
-static unsigned long enabled[3];
+static hal_base_t enabled[3];
 
 
 
@@ -54,70 +52,43 @@ volatile hal_interrupt_regs_t * hal_interrupt_GetRegs( void )
 }
 
 
-hal_base_t hal_interrupt_chackIrqFlag()
-{
-	hal_base_t cpsr = hal_hwBasic_GetCPSR();
-
-	hal_base_t buffer = ((cpsr >> 4) & 1);
-
-	return buffer;
-}
-
-
-
-void Timer_ISR_function(unsigned int irq, void * pParam)
+void Timer_ISR_function(hal_interrupt_source_t Irq, void * pParam)
 {
 	hal_armTimer_GetRegs()->IrqClear = 1;
 	hal_auxiliaries_MiniUartWrite( 'A' );
 }
 
-void GPIO_ISR_function(unsigned int irq, void * pParam)
+
+void GPIO_ISR_function(hal_interrupt_source_t Irq, void * pParam)
 {
 	hal_interrupt_parms_t IntParms;
 	hal_v_base_t PinNum, PinLevel;
-	hal_v_base_t PinEventDetectStatus_0, PinEventDetectStatus_1;
+	hal_v_base_t PinEventDetectStatus[2];
 	hal_gpio_level_t PinValue;
 
-	IntParms = *((hal_interrupt_parms_t*)pParam);
-
-
-
-	//Pin = IntParms.Pending;
-	//unsigned int reg;
-	//rpi_volatile_reg_t reg;
-
-	// check which is the source
-	//reg = GET32(RPI_GetGpio()->GPEDS0);
-
-	//reg = hal_gpio_getBase()->GPEDS[0];
-
-	//PUT32(RPI_GetGpio()->GPEDS0, 0x0000);
-
-	//hal_gpio_getBase()->GPEDS[0] = 0xFFFFFFFFUL;
-
-	//reg = GET32(RPI_GetGpio()->GPEDS0);
-	// test if cleared
-
-	//reg = hal_gpio_getBase()->GPEDS[0];
+	if ( pParam != 0)
+	{
+		IntParms = * ( ( hal_interrupt_parms_t * ) pParam );
+	}
 
 	// get pin which interrupted
-	PinEventDetectStatus_0 = hal_gpio_GetRegs()->GPEDS[0];
-	PinEventDetectStatus_1 = hal_gpio_GetRegs()->GPEDS[1];
+	PinEventDetectStatus[0] = hal_gpio_GetRegs()->GPEDS[0];
+	PinEventDetectStatus[1] = hal_gpio_GetRegs()->GPEDS[1];
 
-	if(PinEventDetectStatus_0 != 0)
+	if(PinEventDetectStatus[0] != 0)
 	{
-		PinNum = 31 - __builtin_clz(PinEventDetectStatus_0);
+		PinNum = 31 - __builtin_clz(PinEventDetectStatus[0]);
 	}
-	else if(PinEventDetectStatus_1 != 0)
+	else if(PinEventDetectStatus[1] != 0)
 	{
-		PinNum = 31 - __builtin_clz(PinEventDetectStatus_1);
+		PinNum = 31 - __builtin_clz(PinEventDetectStatus[1]);
 	}
 	else
 	{
-		// set Pin to error state
+		// set pin to error state
 		PinNum = 0xFFFFFFFFUL;
 	}
-	if(PinNum <= 53) // highest gpio pin number
+	if(PinNum < HAL_GPIO_PIN_LASTENTRY) // highest gpio pin number
 	{
 		// get level of pin which interrupted
 		 hal_gpio_GetValue( PinNum, &PinValue );
@@ -135,24 +106,42 @@ void GPIO_ISR_function(unsigned int irq, void * pParam)
 }
 
 
-void hal_interrupt_Init(void)
+hal_error_status_t hal_interrupt_Init(void)
 {
+	hal_error_status_t Check;
+
 	// register isr
 
 	hal_interrupt_initIVT();
 
-	hal_interrupt_RegisterAndEnableIsr (HAL_INTERRUPT_ID_TIMER_0, Timer_ISR_function, 0, 0);
+	Check = hal_interrupt_RegisterAndEnableIsr (HAL_INTERRUPT_ID_TIMER_0, Timer_ISR_function, 0);
+	if ( Check != HAL_ERROR_NO_ERROR )
+	{
+		return HAL_ERROR_GENERAL_ERROR;
+	}
 
-	hal_interrupt_RegisterAndEnableIsr (HAL_INTERRUPT_ID_GPIO_0, GPIO_ISR_function, 0, 0);
+	Check = hal_interrupt_RegisterAndEnableIsr (HAL_INTERRUPT_ID_GPIO_0, GPIO_ISR_function, 0);
+	if ( Check != HAL_ERROR_NO_ERROR )
+	{
+		return HAL_ERROR_GENERAL_ERROR;
+	}
 
+	return HAL_ERROR_NO_ERROR;
 }
 
 
+static hal_base_t hal_interrupt_CheckIrqFlag( void )
+{
+	hal_base_t cpsr = hal_hwBasic_GetCPSR();
 
+	hal_base_t buffer = ( ( cpsr >> 4 ) & 1 );
+
+	return buffer;
+}
 
 
 // is been called on an hw interrupt, this function calls self defined interrupt functions via function pointer array
-static void hal_interrupt_isr_handleRange (unsigned long pending, const unsigned int base)
+static void hal_interrupt_isr_handleRange (hal_base_t pending, const hal_base_t base)
 {
 	while (pending)
 	{
@@ -174,17 +163,11 @@ static void hal_interrupt_isr_handleRange (unsigned long pending, const unsigned
 	}
 }
 
-/**
- *	This is the global IRQ handler on this platform!
- *	It is based on the assembler code found in the Broadcom datasheet.
- *
- **/
+
+// see page 111 https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
 void hal_interrupt_isr (void)
 {
-	// page 112 https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
-	register unsigned long ulMaskedStatus = hal_interrupt_regs->IRQBasicPending;
-
-	//
+	register hal_base_t ulMaskedStatus = hal_interrupt_regs->IRQBasicPending;
 
 	// Bit 8 in IRQBasic indicates interrupts in Pending1 (interrupts 0-31):
 	if (ulMaskedStatus & (1UL << 8))
@@ -225,12 +208,14 @@ void hal_interrupt_isr (void)
 
 }
 
+
 void hal_interrupt_UnblockIrq (void)
 {
 	// https://stackoverflow.com/questions/14950614/working-of-asm-volatile-memory
 	// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHBFEIB.html
 	asm volatile ("cpsie i" ::: "memory");
 }
+
 
 void hal_interrupt_BlockIrq (void)
 {
@@ -239,82 +224,118 @@ void hal_interrupt_BlockIrq (void)
 	asm volatile ("cpsid i" ::: "memory");
 }
 
-void hal_interrupt_resgisterIsr (const unsigned int irq, hal_interrupt_isr_t pfnHandler, void *pParam, unsigned int Enable)
+
+hal_error_status_t hal_interrupt_resgisterIsr (const hal_interrupt_source_t Irq, hal_interrupt_isr_t pfnHandler, void * pParam)
 {
-	if (irq < HAL_INTERRUPT_ISR_COUNT) {
-		hal_interrupt_BlockIrq();
-		hal_interrupt_isrArray[irq].pfnHandler = pfnHandler;
-		hal_interrupt_isrArray[irq].pParam     = pParam;
-		if(Enable)
-			hal_interrupt_UnblockIrq();
+	if (Irq >= HAL_INTERRUPT_ID_lASTENTRY || pfnHandler == 0)
+	{
+		return HAL_ERROR_GENERAL_ERROR;
 	}
+
+	hal_interrupt_isrArray[Irq].pfnHandler = pfnHandler;
+	hal_interrupt_isrArray[Irq].pParam     = pParam;
+
+	return HAL_ERROR_NO_ERROR;
 }
 
-void hal_interrupt_RegisterAndEnableIsr (const unsigned int irq, hal_interrupt_isr_t pfnHandler, void *pParam, unsigned int Enable)
+
+hal_error_status_t hal_interrupt_RegisterAndEnableIsr (const hal_interrupt_source_t Irq, hal_interrupt_isr_t pfnHandler, void * pParam)
 {
-	hal_interrupt_resgisterIsr (irq, pfnHandler, pParam, 0);
-	hal_interrupt_enableIRQ(irq);
-	if(Enable)
-		hal_interrupt_UnblockIrq();
+	hal_error_status_t Check;
+	Check = hal_interrupt_resgisterIsr ( Irq, pfnHandler, pParam );
+	if ( Check != HAL_ERROR_NO_ERROR )
+	{
+		return HAL_ERROR_GENERAL_ERROR;
+	}
+
+	Check = hal_interrupt_enableIRQ( Irq );
+	if ( Check != HAL_ERROR_NO_ERROR )
+	{
+		return HAL_ERROR_GENERAL_ERROR;
+	}
+	return HAL_ERROR_NO_ERROR;
 }
 
-void hal_interrupt_enableIRQ (const unsigned int irq)
+
+hal_error_status_t hal_interrupt_enableIRQ (const hal_interrupt_source_t Irq)
 {
 	// write bit into enable register -> interrupt can occur in pending registers
-	unsigned long mask = 1UL << (irq % 32);
+	hal_base_t mask = 1UL << ( Irq % 32 );
 	hal_base_t irqFlag;
 
-	if (irq < HAL_INTERRUPT_ISR_COUNT)
+	if ( Irq >= HAL_INTERRUPT_ID_lASTENTRY )
 	{
-		// check if interrupt are enabled
-		irqFlag = hal_interrupt_chackIrqFlag();
-		// disable interrupts
-		hal_interrupt_BlockIrq();
+		return HAL_ERROR_GENERAL_ERROR;
+	}
+	// check if interrupt are enabled
+	irqFlag = hal_interrupt_CheckIrqFlag();
+	// disable interrupts
+	hal_interrupt_BlockIrq();
 
-		// check which register to write to
-		if (irq <= 31)
-		{
-			hal_interrupt_regs->EnableIRQs1 = mask;
-			enabled[0] |= mask;
-		}
-		else if (irq <= 63)
-		{
-			hal_interrupt_regs->EnableIRQs2 = mask;
-			enabled[1] |= mask;
-		}
-		else if (irq < HAL_INTERRUPT_ISR_COUNT)
-		{
-			hal_interrupt_regs->EnableBasicIRQs = mask;
-			enabled[2] |= mask;
-		}
-
-		// enable irq if interrupts was enabled
-		if(irqFlag != 0)
-		{
-			hal_interrupt_UnblockIrq();
-		}
+	// check which register to write to
+	if (Irq <= 31)
+	{
+		hal_interrupt_regs->EnableIRQs1 = mask;
+		enabled[0] |= mask;
+	}
+	else if (Irq <= 63)
+	{
+		hal_interrupt_regs->EnableIRQs2 = mask;
+		enabled[1] |= mask;
+	}
+	else	// if (Irq < HAL_INTERRUPT_ISR_COUNT)
+	{
+		hal_interrupt_regs->EnableBasicIRQs = mask;
+		enabled[2] |= mask;
 	}
 
+	// enable irq if interrupts was enabled
+	if(irqFlag != 0)
+	{
+		hal_interrupt_UnblockIrq();
+	}
 
+	return HAL_ERROR_GENERAL_ERROR;
 }
 
-void hal_interrupt_DisableIRQ (const unsigned int irq)
+
+hal_error_status_t hal_interrupt_DisableIRQ (const hal_interrupt_source_t Irq)
 {
 	// write bit into disable register -> interrupt can not occur in pending registers
-	unsigned long mask = 1UL << (irq % 32);
+	hal_base_t mask = 1UL << ( Irq % 32 );
+	hal_base_t irqFlag;
 
-	if (irq <= 31) {
+	if ( Irq >= HAL_INTERRUPT_ID_lASTENTRY )
+	{
+		return HAL_ERROR_GENERAL_ERROR;
+	}
+	// check if interrupt are enabled
+	irqFlag = hal_interrupt_CheckIrqFlag();
+	// disable interrupts
+	hal_interrupt_BlockIrq();
+
+	if ( Irq <= 31 )
+	{
 		hal_interrupt_regs->DisableIRQs1 = mask;
 		enabled[0] &= ~mask;
 	}
-	else if (irq <= 63) {
+	else if ( Irq <= 63 )
+	{
 		hal_interrupt_regs->DisableIRQs2 = mask;
 		enabled[1] &= ~mask;
 	}
-	else if (irq < HAL_INTERRUPT_ISR_COUNT) {
+	else	// if ( Irq < HAL_INTERRUPT_ISR_COUNT )
+	{
 		hal_interrupt_regs->DisableBasicIRQs = mask;
 		enabled[2] &= ~mask;
 	}
+
+	// enable irq if interrupts was enabled
+	if(irqFlag != 0)
+	{
+		hal_interrupt_UnblockIrq();
+	}
+	return HAL_ERROR_GENERAL_ERROR;
 }
 
 

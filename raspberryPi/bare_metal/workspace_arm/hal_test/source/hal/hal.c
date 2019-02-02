@@ -12,7 +12,7 @@ void hal_Init(void)
 {
 
 
-	hal_gpio_SetInput( HAL_GPIO_PIN5 );
+	hal_gpio_SetInput( HAL_GPIO_PIN_5 );
 	//hal_gpio_SetPinFunction( HAL_GPIO_PIN5, HAL_GPIO_FUNC_SEL_INPUT );
 
 
@@ -21,16 +21,16 @@ void hal_Init(void)
 
 
 // debug
-	hal_gpio_SetInput( HAL_GPIO_PIN14 );
-    volatile hal_error_status_t test = hal_gpio_SetPullUpDown( HAL_GPIO_PIN14, HAL_GPIO_PULLMODE_UP );
-    volatile hal_error_status_t tesx = hal_gpio_SetPullUpDown( HAL_GPIO_PIN14, HAL_GPIO_PULLMODE_DOWN );
-    volatile hal_error_status_t tesg = hal_gpio_SetPullUpDown( HAL_GPIO_PIN14, HAL_GPIO_PULLMODE_UP );
+	hal_gpio_SetInput( HAL_GPIO_PIN_14 );
+    volatile hal_error_status_t test = hal_gpio_SetPullUpDown( HAL_GPIO_PIN_14, HAL_GPIO_PULLMODE_UP );
+    volatile hal_error_status_t tesx = hal_gpio_SetPullUpDown( HAL_GPIO_PIN_14, HAL_GPIO_PULLMODE_DOWN );
+    volatile hal_error_status_t tesg = hal_gpio_SetPullUpDown( HAL_GPIO_PIN_14, HAL_GPIO_PULLMODE_UP );
 
 
 	hal_armTimer_Init(HAL_ARMTIMER_COUNTERWIDTH_23, HAL_ARMTIMER_PRESCALE_256, 0x4000);
 
 
-	hal_gpio_EnablePinInterrupt(HAL_GPIO_PIN5, HAL_GPIO_DETECT_RISING);
+	hal_gpio_EnablePinInterrupt(HAL_GPIO_PIN_5, HAL_GPIO_DETECT_RISING);
 
 
 	hal_interrupt_Init();

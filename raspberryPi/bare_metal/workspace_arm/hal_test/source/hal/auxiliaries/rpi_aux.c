@@ -45,12 +45,12 @@ void hal_auxiliaries_MiniUartInit( int baud, int bits )
     hal_auxillary_regs->MiniUart_BAUD = ( SYS_FREQ / ( 8 * baud ) ) - 1;
 
     // set rx and tx pin to corresponding alternative function
-    hal_gpio_SetPinFunction( HAL_GPIO_PIN14, HAL_GPIO_FUNC_SEL_ALT5 );
-    hal_gpio_SetPinFunction( HAL_GPIO_PIN15, HAL_GPIO_FUNC_SEL_ALT5 );
+    hal_gpio_SetPinFunction( HAL_GPIO_PIN_14, HAL_GPIO_FUNCSEL_ALT5 );
+    hal_gpio_SetPinFunction( HAL_GPIO_PIN_15, HAL_GPIO_FUNCSEL_ALT5 );
 
 
     // set pullup for gpios
-    volatile hal_base_t test = hal_gpio_SetPullUpDown( HAL_GPIO_PIN14, HAL_GPIO_PULLMODE_UP );
+    volatile hal_base_t test = hal_gpio_SetPullUpDown( HAL_GPIO_PIN_14, HAL_GPIO_PULLMODE_UP );
 
     // enable mini uart tx
     hal_auxillary_regs->MiniUart_CNTL = AUX_MUCNTL_TX_ENABLE;

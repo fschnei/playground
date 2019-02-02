@@ -31,7 +31,7 @@ hal_error_status_t hal_gpio_SetPullUpDown( rpi_gpio_pin_t GpioNo, hal_gpio_pullu
     hal_base_t index = GpioNo / 32;
 	hal_base_t mask = ( 1 << ( GpioNo - ( 32 * index ) ) );
 
-	if( GpioNo >= HAL_GPIO_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_PIN_LASTENTRY )
 	{
 		// invalid gpio pin
 		return HAL_ERROR_GENERAL_ERROR;
@@ -71,7 +71,7 @@ hal_error_status_t hal_gpio_SetPinFunction( rpi_gpio_pin_t GpioNo, rpi_gpio_alt_
     hal_base_t index = GpioNo / 10;
 	hal_base_t shift = ( GpioNo % 10 ) * 3;
 
-	if( GpioNo >= HAL_GPIO_LASTENTRY || Function >= HAL_GPIO_FUNC_SEL_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_PIN_LASTENTRY || Function >= HAL_GPIO_FUNCSEL_LASTENTRY )
 	{
 		// invalid gpio pin or invalid alternative function
 		return HAL_ERROR_GENERAL_ERROR;
@@ -92,13 +92,13 @@ hal_error_status_t hal_gpio_SetPinFunction( rpi_gpio_pin_t GpioNo, rpi_gpio_alt_
 
 hal_error_status_t hal_gpio_SetOutput( rpi_gpio_pin_t GpioNo )
 {
-	return hal_gpio_SetPinFunction( GpioNo, HAL_GPIO_FUNC_SEL_OUTPUT );
+	return hal_gpio_SetPinFunction( GpioNo, HAL_GPIO_FUNCSEL_OUTPUT );
 }
 
 
 hal_error_status_t hal_gpio_SetInput( rpi_gpio_pin_t GpioNo )
 {
-	return hal_gpio_SetPinFunction( GpioNo, HAL_GPIO_FUNC_SEL_INPUT );
+	return hal_gpio_SetPinFunction( GpioNo, HAL_GPIO_FUNCSEL_INPUT );
 }
 
 
@@ -108,7 +108,7 @@ hal_error_status_t hal_gpio_GetValue( rpi_gpio_pin_t GpioNo, hal_gpio_level_t * 
     hal_base_t index = GpioNo / 32;
 	hal_base_t mask = ( 1 << ( GpioNo - ( 32 * index ) ) );
 
-	if( GpioNo >= HAL_GPIO_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_PIN_LASTENTRY )
 	{
 		// invalid gpio pin
 		return HAL_ERROR_GENERAL_ERROR;
@@ -132,7 +132,7 @@ hal_error_status_t hal_gpio_GetValue( rpi_gpio_pin_t GpioNo, hal_gpio_level_t * 
 hal_error_status_t hal_gpio_Toggle( rpi_gpio_pin_t GpioNo )
 {
 	hal_gpio_level_t Level;
-	if( GpioNo >= HAL_GPIO_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_PIN_LASTENTRY )
 	{
 		// invalid gpio pin
 		return HAL_ERROR_GENERAL_ERROR;
@@ -159,7 +159,7 @@ hal_error_status_t hal_gpio_SetHi( rpi_gpio_pin_t GpioNo )
     hal_base_t index = GpioNo / 32;
 	hal_base_t mask = ( 1 << ( GpioNo - ( 32 * index ) ) );
 
-	if( GpioNo >= HAL_GPIO_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_PIN_LASTENTRY )
 	{
 		// invalid gpio pin
 		return HAL_ERROR_GENERAL_ERROR;
@@ -176,7 +176,7 @@ hal_error_status_t hal_gpio_SetLo( rpi_gpio_pin_t GpioNo )
     hal_base_t index = GpioNo / 32;
 	hal_base_t mask = ( 1 << ( GpioNo - ( 32 * index ) ) );
 
-	if( GpioNo >= HAL_GPIO_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_PIN_LASTENTRY )
 	{
 		// invalid gpio pin
 		return HAL_ERROR_GENERAL_ERROR;
@@ -190,7 +190,7 @@ hal_error_status_t hal_gpio_SetLo( rpi_gpio_pin_t GpioNo )
 
 hal_error_status_t hal_gpio_SetValue( rpi_gpio_pin_t GpioNo, hal_gpio_level_t Value )
 {
-	if( GpioNo >= HAL_GPIO_LASTENTRY || Value >= HAL_GPIO_LVL_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_PIN_LASTENTRY || Value >= HAL_GPIO_LVL_LASTENTRY )
 	{
 		// invalid gpio pin or invalid value
 		return HAL_ERROR_GENERAL_ERROR;
@@ -212,7 +212,7 @@ hal_error_status_t hal_gpio_EnablePinInterrupt(rpi_gpio_pin_t GpioNo, hal_gpio_d
 	hal_base_t index = GpioNo / 32;
 	hal_base_t mask = ( 1 << ( GpioNo - ( 32 * index ) ) );
 
-	if( GpioNo >= HAL_GPIO_LASTENTRY || DetectMode >= HAL_GPIO_DETECT_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_PIN_LASTENTRY || DetectMode >= HAL_GPIO_DETECT_LASTENTRY )
 	{
 		// invalid gpio pin or invalid detect mode
 		return HAL_ERROR_GENERAL_ERROR;
@@ -257,7 +257,7 @@ hal_error_status_t hal_gpio_DisablePinInterrupt(rpi_gpio_pin_t GpioNo, hal_gpio_
 	hal_base_t index = GpioNo / 32;
 	hal_base_t mask = ~ ( 1 << ( GpioNo - ( 32 * index ) ) );
 
-	if( GpioNo >= HAL_GPIO_LASTENTRY || DetectMode >= HAL_GPIO_DETECT_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_PIN_LASTENTRY || DetectMode >= HAL_GPIO_DETECT_LASTENTRY )
 	{
 		// invalid gpio pin or invalid detect mode
 		return HAL_ERROR_GENERAL_ERROR;
@@ -302,7 +302,7 @@ hal_error_status_t hal_gpio_ClearInterrupt(rpi_gpio_pin_t GpioNo)
 	hal_base_t index = GpioNo / 32;
 	hal_base_t mask = ( 1 << ( GpioNo - ( 32 * index ) ) );
 
-	if( GpioNo >= HAL_GPIO_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_PIN_LASTENTRY )
 	{
 		// invalid gpio pin
 		return HAL_ERROR_GENERAL_ERROR;
