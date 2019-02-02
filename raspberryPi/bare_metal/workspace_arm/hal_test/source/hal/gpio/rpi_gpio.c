@@ -2,7 +2,7 @@
 #include "rpi_gpio.h"
 
 
-static volatile hal_gpio_regs_t * const hal_gpio_regs = (hal_gpio_regs_t *) (HAL_GPIO_BASE);
+static volatile hal_gpio_regs_t * const hal_gpio_regs = ( hal_gpio_regs_t * ) ( HAL_GPIO_BASE );
 
 
 // provide pinter to gpio registers via function
@@ -14,13 +14,13 @@ volatile hal_gpio_regs_t * const hal_gpio_GetRegs(void)
 }
 
 
-hal_error_status_t hal_gpio_SetPullUpDown( rpi_gpio_pin_t gpio, hal_gpio_pullupdown_t UpDown )
+hal_error_status_t hal_gpio_SetPullUpDown( rpi_gpio_pin_t GpioNo, hal_gpio_pullupdown_t PullMode )
 {
 	volatile hal_base_t i;
-    hal_base_t index = gpio / 32;
-	hal_base_t mask = ( 1 << ( gpio - ( 32 * index ) ) );
+    hal_base_t index = GpioNo / 32;
+	hal_base_t mask = ( 1 << ( GpioNo - ( 32 * index ) ) );
 
-	if( gpio >= HAL_GPIO_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_LASTENTRY )
 	{
 		// invalid gpio pin
 		return HAL_ERROR_GENERAL_ERROR;
@@ -28,15 +28,15 @@ hal_error_status_t hal_gpio_SetPullUpDown( rpi_gpio_pin_t gpio, hal_gpio_pullupd
 
     // https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
 	// page 100
-	if( UpDown == HAL_GPIO_PULLMODE_UP )
+	if( PullMode == HAL_GPIO_PULLMODE_UP )
 	{
 		hal_gpio_regs->GPPUD[0] = ( 1 << 1 );
 	}
-	else if ( UpDown == HAL_GPIO_PULLMODE_DOWN )
+	else if ( PullMode == HAL_GPIO_PULLMODE_DOWN )
 	{
 		hal_gpio_regs->GPPUD[0] = ( 1 << 0 );
 	}
-	else if ( UpDown == HAL_GPIO_PULLMODE_DISABLE )
+	else if ( PullMode == HAL_GPIO_PULLMODE_DISABLE )
 	{
 		hal_gpio_regs->GPPUD[0] = 0x00;
 	}
@@ -54,13 +54,13 @@ hal_error_status_t hal_gpio_SetPullUpDown( rpi_gpio_pin_t gpio, hal_gpio_pullupd
 }
 
 
-hal_error_status_t hal_gpio_SetPinFunction( rpi_gpio_pin_t gpio, rpi_gpio_alt_function_t func )
+hal_error_status_t hal_gpio_SetPinFunction( rpi_gpio_pin_t GpioNo, rpi_gpio_alt_function_t Function )
 {
 	hal_v_base_t Gpfsel_Buffer;
-    hal_base_t index = gpio / 10;
-	hal_base_t shift = ( gpio % 10 ) * 3;
+    hal_base_t index = GpioNo / 10;
+	hal_base_t shift = ( GpioNo % 10 ) * 3;
 
-	if( gpio >= HAL_GPIO_LASTENTRY || func >= HAL_GPIO_FUNC_SEL_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_LASTENTRY || Function >= HAL_GPIO_FUNC_SEL_LASTENTRY )
 	{
 		// invalid gpio pin or invalid alternative function
 		return HAL_ERROR_GENERAL_ERROR;
@@ -71,7 +71,7 @@ hal_error_status_t hal_gpio_SetPinFunction( rpi_gpio_pin_t gpio, rpi_gpio_alt_fu
 	// clear function select
 	Gpfsel_Buffer &= ~ ( HAL_GPIO_FUNC_SEL_CLR_MASK << shift );
 	// set new function
-	Gpfsel_Buffer |= ( func << shift );
+	Gpfsel_Buffer |= ( Function << shift );
 	// write back buffer to gpfsel register
     hal_gpio_regs->GPFSEL[index] = Gpfsel_Buffer;
 
@@ -79,25 +79,25 @@ hal_error_status_t hal_gpio_SetPinFunction( rpi_gpio_pin_t gpio, rpi_gpio_alt_fu
 }
 
 
-hal_error_status_t hal_gpio_SetOutput( rpi_gpio_pin_t gpio )
+hal_error_status_t hal_gpio_SetOutput( rpi_gpio_pin_t GpioNo )
 {
-	return hal_gpio_SetPinFunction( gpio, HAL_GPIO_FUNC_SEL_OUTPUT );
+	return hal_gpio_SetPinFunction( GpioNo, HAL_GPIO_FUNC_SEL_OUTPUT );
 }
 
 
-hal_error_status_t hal_gpio_SetInput( rpi_gpio_pin_t gpio )
+hal_error_status_t hal_gpio_SetInput( rpi_gpio_pin_t GpioNo )
 {
-	return hal_gpio_SetPinFunction( gpio, HAL_GPIO_FUNC_SEL_INPUT );
+	return hal_gpio_SetPinFunction( GpioNo, HAL_GPIO_FUNC_SEL_INPUT );
 }
 
 
-hal_error_status_t hal_gpio_GetValue( rpi_gpio_pin_t gpio, hal_gpio_level_t * Level )
+hal_error_status_t hal_gpio_GetValue( rpi_gpio_pin_t GpioNo, hal_gpio_level_t * Level )
 {
 	hal_gpio_level_t result;
-    hal_base_t index = gpio / 32;
-	hal_base_t mask = ( 1 << ( gpio - ( 32 * index ) ) );
+    hal_base_t index = GpioNo / 32;
+	hal_base_t mask = ( 1 << ( GpioNo - ( 32 * index ) ) );
 
-	if( gpio >= HAL_GPIO_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_LASTENTRY )
 	{
 		// invalid gpio pin
 		return HAL_ERROR_GENERAL_ERROR;
@@ -118,37 +118,37 @@ hal_error_status_t hal_gpio_GetValue( rpi_gpio_pin_t gpio, hal_gpio_level_t * Le
 }
 
 
-hal_error_status_t hal_gpio_Toggle( rpi_gpio_pin_t gpio )
+hal_error_status_t hal_gpio_Toggle( rpi_gpio_pin_t GpioNo )
 {
 	hal_gpio_level_t Level;
-	if( gpio >= HAL_GPIO_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_LASTENTRY )
 	{
 		// invalid gpio pin
 		return HAL_ERROR_GENERAL_ERROR;
 	}
 
-	if ( hal_gpio_GetValue( gpio, &Level ) != HAL_ERROR_NO_ERROR )
+	if ( hal_gpio_GetValue( GpioNo, &Level ) != HAL_ERROR_NO_ERROR )
 	{
 		return HAL_ERROR_GENERAL_ERROR;
 	}
 
     if( Level == HAL_GPIO_LVL_HI )
     {
-    	return hal_gpio_SetLo( gpio );
+    	return hal_gpio_SetLo( GpioNo );
     }
     else
     {
-    	return hal_gpio_SetHi( gpio );
+    	return hal_gpio_SetHi( GpioNo );
     }
 }
 
 
-hal_error_status_t hal_gpio_SetHi( rpi_gpio_pin_t gpio )
+hal_error_status_t hal_gpio_SetHi( rpi_gpio_pin_t GpioNo )
 {
-    hal_base_t index = gpio / 32;
-	hal_base_t mask = ( 1 << ( gpio - ( 32 * index ) ) );
+    hal_base_t index = GpioNo / 32;
+	hal_base_t mask = ( 1 << ( GpioNo - ( 32 * index ) ) );
 
-	if( gpio >= HAL_GPIO_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_LASTENTRY )
 	{
 		// invalid gpio pin
 		return HAL_ERROR_GENERAL_ERROR;
@@ -160,12 +160,12 @@ hal_error_status_t hal_gpio_SetHi( rpi_gpio_pin_t gpio )
 }
 
 
-hal_error_status_t hal_gpio_SetLo( rpi_gpio_pin_t gpio )
+hal_error_status_t hal_gpio_SetLo( rpi_gpio_pin_t GpioNo )
 {
-    hal_base_t index = gpio / 32;
-	hal_base_t mask = ( 1 << ( gpio - ( 32 * index ) ) );
+    hal_base_t index = GpioNo / 32;
+	hal_base_t mask = ( 1 << ( GpioNo - ( 32 * index ) ) );
 
-	if( gpio >= HAL_GPIO_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_LASTENTRY )
 	{
 		// invalid gpio pin
 		return HAL_ERROR_GENERAL_ERROR;
@@ -177,42 +177,37 @@ hal_error_status_t hal_gpio_SetLo( rpi_gpio_pin_t gpio )
 }
 
 
-hal_error_status_t hal_gpio_SetValue( rpi_gpio_pin_t gpio, hal_gpio_level_t value )
+hal_error_status_t hal_gpio_SetValue( rpi_gpio_pin_t GpioNo, hal_gpio_level_t Value )
 {
-	if( gpio >= HAL_GPIO_LASTENTRY || value >= HAL_GPIO_LVL_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_LASTENTRY || Value >= HAL_GPIO_LVL_LASTENTRY )
 	{
 		// invalid gpio pin or invalid value
 		return HAL_ERROR_GENERAL_ERROR;
 	}
-    if( value == HAL_GPIO_LVL_LO )
+    if( Value == HAL_GPIO_LVL_LO )
     {
-    	return hal_gpio_SetLo( gpio );
+    	return hal_gpio_SetLo( GpioNo );
     }
-    else if( value == HAL_GPIO_LVL_HI )
+    else if( Value == HAL_GPIO_LVL_HI )
     {
-    	return hal_gpio_SetHi( gpio );
+    	return hal_gpio_SetHi( GpioNo );
     }
 	return HAL_ERROR_GENERAL_ERROR;
 }
 
 
-
-
-
-
-
-hal_error_status_t hal_gpio_EnablePinInterrupt(rpi_gpio_pin_t pinNum, hal_gpio_detectMode_t detectMode)
+hal_error_status_t hal_gpio_EnablePinInterrupt(rpi_gpio_pin_t GpioNo, hal_gpio_detectMode_t DetectMode)
 {
-	hal_base_t index = pinNum / 32;
-	hal_base_t mask = ( 1 << ( pinNum - ( 32 * index ) ) );
+	hal_base_t index = GpioNo / 32;
+	hal_base_t mask = ( 1 << ( GpioNo - ( 32 * index ) ) );
 
-	if( pinNum >= HAL_GPIO_LASTENTRY || detectMode >= HAL_GPIO_DETECT_LASTENTRY )
+	if( GpioNo >= HAL_GPIO_LASTENTRY || DetectMode >= HAL_GPIO_DETECT_LASTENTRY )
 	{
 		// invalid gpio pin or invalid detect mode
 		return HAL_ERROR_GENERAL_ERROR;
 	}
 
-	switch( detectMode )
+	switch( DetectMode )
 	{
 	case HAL_GPIO_DETECT_RISING:
 		hal_gpio_regs->GPREN[index] |= mask;
@@ -245,18 +240,19 @@ hal_error_status_t hal_gpio_EnablePinInterrupt(rpi_gpio_pin_t pinNum, hal_gpio_d
 	return HAL_ERROR_NO_ERROR;
 }
 
-hal_error_status_t hal_gpio_DisablePinInterrupt(rpi_gpio_pin_t pinNum, hal_gpio_detectMode_t detectMode)
-{
-	hal_base_t index = pinNum / 32;
-	hal_base_t mask = ~ ( 1 << ( pinNum - ( 32 * index ) ) );
 
-	if( pinNum >= HAL_GPIO_LASTENTRY || detectMode >= HAL_GPIO_DETECT_LASTENTRY )
+hal_error_status_t hal_gpio_DisablePinInterrupt(rpi_gpio_pin_t GpioNo, hal_gpio_detectMode_t DetectMode)
+{
+	hal_base_t index = GpioNo / 32;
+	hal_base_t mask = ~ ( 1 << ( GpioNo - ( 32 * index ) ) );
+
+	if( GpioNo >= HAL_GPIO_LASTENTRY || DetectMode >= HAL_GPIO_DETECT_LASTENTRY )
 	{
 		// invalid gpio pin or invalid detect mode
 		return HAL_ERROR_GENERAL_ERROR;
 	}
 
-	switch( detectMode )
+	switch( DetectMode )
 	{
 	case HAL_GPIO_DETECT_RISING:
 		hal_gpio_regs->GPREN[index] &= mask;
@@ -289,12 +285,13 @@ hal_error_status_t hal_gpio_DisablePinInterrupt(rpi_gpio_pin_t pinNum, hal_gpio_
 	return HAL_ERROR_NO_ERROR;
 }
 
-hal_error_status_t hal_gpio_ClearInterrupt(rpi_gpio_pin_t pinNum)
-{
-	hal_base_t index = pinNum / 32;
-	hal_base_t mask = ( 1 << ( pinNum - ( 32 * index ) ) );
 
-	if( pinNum >= HAL_GPIO_LASTENTRY )
+hal_error_status_t hal_gpio_ClearInterrupt(rpi_gpio_pin_t GpioNo)
+{
+	hal_base_t index = GpioNo / 32;
+	hal_base_t mask = ( 1 << ( GpioNo - ( 32 * index ) ) );
+
+	if( GpioNo >= HAL_GPIO_LASTENTRY )
 	{
 		// invalid gpio pin
 		return HAL_ERROR_GENERAL_ERROR;

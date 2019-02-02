@@ -140,24 +140,24 @@ typedef enum {
 
 volatile hal_gpio_regs_t * const hal_gpio_GetRegs( void );
 
-hal_error_status_t hal_gpio_SetPullUpDown( rpi_gpio_pin_t gpio, hal_gpio_pullupdown_t UpDown );
+hal_error_status_t hal_gpio_SetPullUpDown( rpi_gpio_pin_t GpioNo, hal_gpio_pullupdown_t PullMode );
 
-hal_error_status_t hal_gpio_SetPinFunction( rpi_gpio_pin_t gpio, rpi_gpio_alt_function_t func );
-hal_error_status_t hal_gpio_SetOutput( rpi_gpio_pin_t gpio );
-hal_error_status_t hal_gpio_SetInput( rpi_gpio_pin_t gpio );
+hal_error_status_t hal_gpio_SetPinFunction( rpi_gpio_pin_t GpioNo, rpi_gpio_alt_function_t Function );
+hal_error_status_t hal_gpio_SetOutput( rpi_gpio_pin_t GpioNo );
+hal_error_status_t hal_gpio_SetInput( rpi_gpio_pin_t GpioNo );
 
-hal_error_status_t hal_gpio_GetValue( rpi_gpio_pin_t gpio, hal_gpio_level_t * Level );
+hal_error_status_t hal_gpio_GetValue( rpi_gpio_pin_t GpioNo, hal_gpio_level_t * Level );
 
-hal_error_status_t hal_gpio_SetHi( rpi_gpio_pin_t gpio );
-hal_error_status_t hal_gpio_SetLo( rpi_gpio_pin_t gpio );
-hal_error_status_t hal_gpio_SetValue( rpi_gpio_pin_t gpio, hal_gpio_level_t value );
-hal_error_status_t hal_gpio_Toggle( rpi_gpio_pin_t gpio );
+hal_error_status_t hal_gpio_SetHi( rpi_gpio_pin_t GpioNo );
+hal_error_status_t hal_gpio_SetLo( rpi_gpio_pin_t GpioNo );
+hal_error_status_t hal_gpio_SetValue( rpi_gpio_pin_t GpioNo, hal_gpio_level_t Value );
+hal_error_status_t hal_gpio_Toggle( rpi_gpio_pin_t GpioNo );
 
 // see p. 96 ff. https://www.raspberrypi.org/app/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
 // interrupt functions
-hal_error_status_t hal_gpio_EnablePinInterrupt	( rpi_gpio_pin_t pinNum, hal_gpio_detectMode_t detectMode );
-hal_error_status_t hal_gpio_DisablePinInterrupt	( rpi_gpio_pin_t pinNum, hal_gpio_detectMode_t detectMode );
-hal_error_status_t hal_gpio_ClearInterrupt		( rpi_gpio_pin_t pinNum );
+hal_error_status_t hal_gpio_EnablePinInterrupt	( rpi_gpio_pin_t GpioNo, hal_gpio_detectMode_t DetectMode );
+hal_error_status_t hal_gpio_DisablePinInterrupt	( rpi_gpio_pin_t GpioNo, hal_gpio_detectMode_t DetectMode );
+hal_error_status_t hal_gpio_ClearInterrupt		( rpi_gpio_pin_t GpioNo );
 
 
 #endif
