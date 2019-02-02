@@ -17,7 +17,7 @@ void hal_Init(void)
 
 
 	// Initialise the UART
-	//hal_auxiliaries_MiniUartInit( 9600, 8 );
+	hal_auxiliaries_MiniUartInit( 9600, 8 );
 
 
 // debug
@@ -27,7 +27,7 @@ void hal_Init(void)
     volatile hal_error_status_t tesg = hal_gpio_SetPullUpDown( HAL_GPIO_PIN14, HAL_GPIO_PULLMODE_UP );
 
 
-	hal_armTimer_Init();
+	hal_armTimer_Init(HAL_ARMTIMER_COUNTERWIDTH_23, HAL_ARMTIMER_PRESCALE_256, 0x4000);
 
 
 	hal_gpio_EnablePinInterrupt(HAL_GPIO_PIN5, HAL_GPIO_DETECT_RISING);

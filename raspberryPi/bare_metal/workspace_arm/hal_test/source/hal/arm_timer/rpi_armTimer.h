@@ -4,23 +4,6 @@
 
 #include "../rpi_base.h"
 
-// see section 14
-#define HAL_ARMTIMER_BASE               ( HAL_RPI_PERIPHERAL_BASE + 0xB400UL )
-
-
-#define HAL_ARMTIMER_CTRL_WIDTHBIT16	( 0 << 1 )
-#define HAL_ARMTIMER_CTRL_WIDTHBIT23	( 1 << 1 )
-
-#define HAL_ARMTIMER_CTRL_PRESCALE1		( 0 << 2 )
-#define HAL_ARMTIMER_CTRL_PRESCALE16	( 1 << 2 )
-#define HAL_ARMTIMER_CTRL_PRESCALE256	( 2 << 2 )
-
-#define HAL_ARMTIMER_CTRL_INTDISABLE	( 0 << 5 )
-#define HAL_ARMTIMER_CTRL_INTENABLE		( 1 << 5 )
-
-#define HAL_ARMTIMER_CTRL_DISABLE		( 0 << 7 )
-#define HAL_ARMTIMER_CTRL_ENABLE		( 1 << 7 )
-
 
 typedef struct{
 	hal_reg_rw_t 	Load;
@@ -34,12 +17,27 @@ typedef struct{
     hal_reg_r_t 	FreeRunningCounter;
 } hal_armTimer_regs_t;
 
+typedef enum
+{
+	HAL_ARMTIMER_PRESCALE_1,
+	HAL_ARMTIMER_PRESCALE_16,
+	HAL_ARMTIMER_PRESCALE_256,
+	HAL_ARMTIMER_PRESCALE_LASTENTRY,
+} hal_armTimer_prescale_r;
 
-volatile hal_armTimer_regs_t * hal_armTimer_GetRegs(void);
+typedef enum
+{
+	HAL_ARMTIMER_COUNTERWIDTH_16,
+	HAL_ARMTIMER_COUNTERWIDTH_23,
+	HAL_ARMTIMER_COUNTERWIDTH_LASTENTRY,
+} hal_armTimer_counterWidth_r;
 
-void hal_armTimer_Init(void);
 
-void hal_armTimer_ClearIrq(void);
+volatile hal_armTimer_regs_t * hal_armTimer_GetRegs( void );
+
+hal_error_status_t hal_armTimer_Init( hal_armTimer_counterWidth_r Width, hal_armTimer_prescale_r Prescale, hal_base_t Load );
+
+void hal_armTimer_ClearIrq( void );
 
 
 

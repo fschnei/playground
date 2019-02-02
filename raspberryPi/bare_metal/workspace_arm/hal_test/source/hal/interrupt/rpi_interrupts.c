@@ -64,9 +64,8 @@ hal_base_t hal_interrupt_chackIrqFlag()
 }
 
 
-//typedef void (*FN_INTERRUPT_HANDLER) (unsigned int irq, void *pParam);
 
-void Timer_ISR_function(unsigned int irq, void *pParam)
+void Timer_ISR_function(unsigned int irq, void * pParam)
 {
 	hal_armTimer_GetRegs()->IrqClear = 1;
 	hal_auxiliaries_MiniUartWrite( 'A' );
@@ -142,7 +141,7 @@ void hal_interrupt_Init(void)
 
 	hal_interrupt_initIVT();
 
-	//hal_interrupt_registerAndEnableIsr (HAL_INTERRUPT_ID_TIMER_0, Timer_ISR_function, 0, 0);
+	hal_interrupt_RegisterAndEnableIsr (HAL_INTERRUPT_ID_TIMER_0, Timer_ISR_function, 0, 0);
 
 	hal_interrupt_RegisterAndEnableIsr (HAL_INTERRUPT_ID_GPIO_0, GPIO_ISR_function, 0, 0);
 

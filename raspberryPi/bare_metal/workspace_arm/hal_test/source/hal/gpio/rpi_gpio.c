@@ -1,17 +1,13 @@
 
 #include "rpi_gpio.h"
 
-// a mask to be able to clear the bits in the register before setting the value we require
-// see page 92 https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
-#ifndef HAL_GPIO_FUNC_SEL_CLR_MASK
-#define HAL_GPIO_FUNC_SEL_CLR_MASK (7)
-#endif
-
 // gpio access works via memory mapped io
 // this is the base address for gpio pins
-#ifndef HAL_GPIO_BASE
 #define HAL_GPIO_BASE ( HAL_RPI_PERIPHERAL_BASE + 0x200000UL )
-#endif
+
+// a mask to be able to clear the bits in the register before setting the value we require
+// see page 92 https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
+#define HAL_GPIO_FUNC_SEL_CLR_MASK (7)
 
 
 
