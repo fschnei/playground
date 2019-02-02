@@ -121,7 +121,7 @@ void GPIO_ISR_function(unsigned int irq, void * pParam)
 	if(PinNum <= 53) // highest gpio pin number
 	{
 		// get level of pin which interrupted
-		PinValue =  hal_gpio_GetValue( PinNum );
+		 hal_gpio_GetValue( PinNum, &PinValue );
 
 		// get edge
 		if (PinValue == HAL_GPIO_LVL_HI)

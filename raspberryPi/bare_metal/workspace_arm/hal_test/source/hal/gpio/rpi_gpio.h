@@ -35,13 +35,14 @@ typedef enum {
 	HAL_GPIO_FUNC_SEL_ALT1,
 	HAL_GPIO_FUNC_SEL_ALT2,
 	HAL_GPIO_FUNC_SEL_ALT3,
+	HAL_GPIO_FUNC_SEL_LASTENTRY,
     } rpi_gpio_alt_function_t;
 
 // A mask to be able to clear the bits in the register before setting the value we require
 // see page 92 https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2835/BCM2835-ARM-Peripherals.pdf
 #define HAL_GPIO_FUNC_SEL_CLR_MASK     (7)
 
-#define HAL_GPIO_COUNT 53
+//#define HAL_GPIO_COUNT 53
 
 typedef enum {
     HAL_GPIO_PIN0 = 0,
@@ -98,6 +99,7 @@ typedef enum {
     HAL_GPIO_PIN51,
     HAL_GPIO_PIN52,
     HAL_GPIO_PIN53,
+	HAL_GPIO_LASTENTRY,
     } rpi_gpio_pin_t;
 
 
@@ -134,47 +136,48 @@ typedef struct {
 typedef enum {
 	HAL_GPIO_LVL_LO = 0,
 	HAL_GPIO_LVL_HI,
-	HAL_GPIO_LVL_ON,	// TODO: is this necessary ?
-	HAL_GPIO_LVL_OFF,	// TODO: is this necessary ?
 	HAL_GPIO_LVL_UNKNOWN,
+	HAL_GPIO_LVL_LASTENTRY,
 } hal_gpio_level_t;
 
 typedef enum {
-	HAL_GPIO_DETECT_NONE,
 	HAL_GPIO_DETECT_RISING,
 	HAL_GPIO_DETECT_FALLING,
 	HAL_GPIO_DETECT_HIGH,
 	HAL_GPIO_DETECT_LOW,
 	HAL_GPIO_DETECT_RISING_ASYNC,
-	HAL_GPIO_DETECT_FALLING_ASYNC
+	HAL_GPIO_DETECT_FALLING_ASYNC,
+	HAL_GPIO_DETECT_ALL,
+	HAL_GPIO_DETECT_LASTENTRY
 } hal_gpio_detectMode_t;
 
 typedef enum {
 	HAL_GPIO_PULLMODE_UP,
 	HAL_GPIO_PULLMODE_DOWN,
 	HAL_GPIO_PULLMODE_DISABLE,
+	HAL_GPIO_PULLMODE_LASTENTRY,
 } hal_gpio_pullupdown_t;
 
 volatile hal_gpio_regs_t * const hal_gpio_GetRegs( void );
 
-hal_base_t hal_gpio_SetPullUpDown( rpi_gpio_pin_t gpio, hal_gpio_pullupdown_t UpDown );
+hal_error_status_t hal_gpio_SetPullUpDown( rpi_gpio_pin_t gpio, hal_gpio_pullupdown_t UpDown );
 
-void hal_gpio_SetPinFunction( rpi_gpio_pin_t gpio, rpi_gpio_alt_function_t func );
-void hal_gpio_SetOutput( rpi_gpio_pin_t gpio );
-void hal_gpio_SetInput( rpi_gpio_pin_t gpio );
+hal_error_status_t hal_gpio_SetPinFunction( rpi_gpio_pin_t gpio, rpi_gpio_alt_function_t func );
+hal_error_status_t hal_gpio_SetOutput( rpi_gpio_pin_t gpio );
+hal_error_status_t hal_gpio_SetInput( rpi_gpio_pin_t gpio );
 
-hal_gpio_level_t hal_gpio_GetValue( rpi_gpio_pin_t gpio );
+hal_error_status_t hal_gpio_GetValue( rpi_gpio_pin_t gpio, hal_gpio_level_t * Level );
 
-void hal_gpio_SetHi( rpi_gpio_pin_t gpio );
-void hal_gpio_SetLo( rpi_gpio_pin_t gpio );
-void hal_gpio_SetValue( rpi_gpio_pin_t gpio, hal_gpio_level_t value );
-void hal_gpio_Toggle( rpi_gpio_pin_t gpio );
+hal_error_status_t hal_gpio_SetHi( rpi_gpio_pin_t gpio );
+hal_error_status_t hal_gpio_SetLo( rpi_gpio_pin_t gpio );
+hal_error_status_t hal_gpio_SetValue( rpi_gpio_pin_t gpio, hal_gpio_level_t value );
+hal_error_status_t hal_gpio_Toggle( rpi_gpio_pin_t gpio );
 
 // see p. 96 ff. https://www.raspberrypi.org/app/uploads/2012/02/BCM2835-ARM-Peripherals.pdf
-/* Interrupt related functions */
-void hal_gpio_EnablePinInterrupt	( unsigned int pinNum, hal_gpio_detectMode_t detectMode );
-void hal_gpio_DisablePinInterrupt	( unsigned int pinNum, hal_gpio_detectMode_t detectMode );
-void hal_gpio_ClearInterrupt		( unsigned int pinNum );
+// interrupt functions
+hal_error_status_t hal_gpio_EnablePinInterrupt	( rpi_gpio_pin_t pinNum, hal_gpio_detectMode_t detectMode );
+hal_error_status_t hal_gpio_DisablePinInterrupt	( rpi_gpio_pin_t pinNum, hal_gpio_detectMode_t detectMode );
+hal_error_status_t hal_gpio_ClearInterrupt		( rpi_gpio_pin_t pinNum );
 
 
 #endif

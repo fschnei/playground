@@ -3,6 +3,7 @@
 #define RPI_BASE_H
 
 #include "../int_types.h"
+#include "hal_errors.h"
 
 
 // see: https://www.raspberrypi.org/documentation/hardware/raspberrypi/peripheral_addresses.md
@@ -24,6 +25,5 @@ typedef volatile hal_base_t hal_v_base_t;
 typedef hal_v_base_t hal_reg_rw_t;
 typedef hal_v_base_t hal_reg_w_t;
 typedef const hal_v_base_t hal_reg_r_t;
-
 
 #endif
