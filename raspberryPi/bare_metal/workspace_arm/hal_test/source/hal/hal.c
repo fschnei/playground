@@ -20,12 +20,6 @@ void hal_Init(void)
 	hal_auxiliaries_MiniUartInit( 9600, 8 );
 
 
-// debug
-	hal_gpio_SetInput( HAL_GPIO_PIN_14 );
-    volatile hal_error_status_t test = hal_gpio_SetPullUpDown( HAL_GPIO_PIN_14, HAL_GPIO_PULLMODE_UP );
-    volatile hal_error_status_t tesx = hal_gpio_SetPullUpDown( HAL_GPIO_PIN_14, HAL_GPIO_PULLMODE_DOWN );
-    volatile hal_error_status_t tesg = hal_gpio_SetPullUpDown( HAL_GPIO_PIN_14, HAL_GPIO_PULLMODE_UP );
-
 
 	hal_armTimer_Init(HAL_ARMTIMER_COUNTERWIDTH_23, HAL_ARMTIMER_PRESCALE_256, 0x4000);
 

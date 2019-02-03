@@ -4,9 +4,6 @@
 
 #include "../rpi_base.h"
 
-#define HAL_SYSTIMER_BASE       ( HAL_RPI_PERIPHERAL_BASE + 0x3000UL )
-
-
 typedef struct {
 	hal_reg_rw_t control_status;
 	hal_reg_rw_t counter_lo;
@@ -19,9 +16,9 @@ typedef struct {
 
 
 
-volatile hal_sysTimer_regs_t * hal_sysTimer_GetRegs(void);
+volatile hal_sysTimer_regs_t * hal_sysTimer_GetRegs( void );
 
-void hal_sysTimer_WaitMicroSeconds( hal_base_t us );
+void hal_sysTimer_WaitMicroSeconds( hal_base_t MicroSeconds );
 
 
 #endif

@@ -14,8 +14,8 @@
 hal_base_t hal_hwBasic_GetSP(void);
 hal_base_t hal_hwBasic_GetCPSR(void);
 
-hal_base_t hal_hwBasic_Get32(hal_base_t address);
-void hal_hwBasic_Put32(hal_base_t address, hal_base_t value);
+hal_base_t hal_hwBasic_GetMem(hal_base_t address);
+void hal_hwBasic_PutMem(hal_base_t address, hal_base_t value);
 
 
 #endif /* RPI_HWBASIC_H_ */

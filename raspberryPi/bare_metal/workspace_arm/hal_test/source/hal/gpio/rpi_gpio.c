@@ -56,9 +56,15 @@ hal_error_status_t hal_gpio_SetPullUpDown( rpi_gpio_pin_t GpioNo, hal_gpio_pullu
 		// invalid updown mode
 		return HAL_ERROR_GENERAL_ERROR;
 	}
-    for( i = 0; i < 150; i++ ) { }
+    for( i = 0; i < 150; i++ )
+    {
+    	// nop
+    }
     hal_gpio_regs->GPPUDCLK[index] = mask;
-    for( i = 0; i < 150; i++ ) { }
+    for( i = 0; i < 150; i++ )
+    {
+    	// nop
+    }
     hal_gpio_regs->GPPUDCLK[index] = 0;
 
 	return HAL_ERROR_NO_ERROR;
@@ -67,7 +73,7 @@ hal_error_status_t hal_gpio_SetPullUpDown( rpi_gpio_pin_t GpioNo, hal_gpio_pullu
 
 hal_error_status_t hal_gpio_SetPinFunction( rpi_gpio_pin_t GpioNo, rpi_gpio_alt_function_t Function )
 {
-	hal_v_base_t Gpfsel_Buffer;
+	hal_v_base_t gpfsel_Buffer;
     hal_base_t index = GpioNo / 10;
 	hal_base_t shift = ( GpioNo % 10 ) * 3;
 
@@ -78,13 +84,13 @@ hal_error_status_t hal_gpio_SetPinFunction( rpi_gpio_pin_t GpioNo, rpi_gpio_alt_
 	}
 
 	// get current gpfsel register
-	Gpfsel_Buffer = hal_gpio_regs->GPFSEL[index];
+	gpfsel_Buffer = hal_gpio_regs->GPFSEL[index];
 	// clear function select
-	Gpfsel_Buffer &= ~ ( HAL_GPIO_FUNC_SEL_CLR_MASK << shift );
+	gpfsel_Buffer &= ~ ( HAL_GPIO_FUNC_SEL_CLR_MASK << shift );
 	// set new function
-	Gpfsel_Buffer |= ( Function << shift );
+	gpfsel_Buffer |= ( Function << shift );
 	// write back buffer to gpfsel register
-    hal_gpio_regs->GPFSEL[index] = Gpfsel_Buffer;
+    hal_gpio_regs->GPFSEL[index] = gpfsel_Buffer;
 
     return HAL_ERROR_NO_ERROR;
 }
@@ -131,19 +137,19 @@ hal_error_status_t hal_gpio_GetValue( rpi_gpio_pin_t GpioNo, hal_gpio_level_t * 
 
 hal_error_status_t hal_gpio_Toggle( rpi_gpio_pin_t GpioNo )
 {
-	hal_gpio_level_t Level;
+	hal_gpio_level_t level;
 	if( GpioNo >= HAL_GPIO_PIN_LASTENTRY )
 	{
 		// invalid gpio pin
 		return HAL_ERROR_GENERAL_ERROR;
 	}
 
-	if ( hal_gpio_GetValue( GpioNo, &Level ) != HAL_ERROR_NO_ERROR )
+	if ( hal_gpio_GetValue( GpioNo, &level ) != HAL_ERROR_NO_ERROR )
 	{
 		return HAL_ERROR_GENERAL_ERROR;
 	}
 
-    if( Level == HAL_GPIO_LVL_HI )
+    if( level == HAL_GPIO_LVL_HI )
     {
     	return hal_gpio_SetLo( GpioNo );
     }

@@ -4,17 +4,15 @@
 // see section 14 page 196
 #define HAL_ARMTIMER_BASE               ( HAL_RPI_PERIPHERAL_BASE + 0xB400UL )
 
-#define HAL_ARMTIMER_CTRL_WIDTHBIT16	( 0 << 1 )
-#define HAL_ARMTIMER_CTRL_WIDTHBIT23	( 1 << 1 )
+#define HAL_ARMTIMER_CTRL_WIDTH			( 1 << 1 )
 
+#define HAL_ARMTIMER_CTRL_PRESCALE	( 1 << 2 )
 #define HAL_ARMTIMER_CTRL_PRESCALE1		( 0 << 2 )
 #define HAL_ARMTIMER_CTRL_PRESCALE16	( 1 << 2 )
 #define HAL_ARMTIMER_CTRL_PRESCALE256	( 2 << 2 )
 
-#define HAL_ARMTIMER_CTRL_INTDISABLE	( 0 << 5 )
 #define HAL_ARMTIMER_CTRL_INTENABLE		( 1 << 5 )
 
-#define HAL_ARMTIMER_CTRL_DISABLE		( 0 << 7 )
 #define HAL_ARMTIMER_CTRL_ENABLE		( 1 << 7 )
 
 
@@ -42,24 +40,25 @@ hal_error_status_t hal_armTimer_Init( hal_armTimer_counterWidth_r Width, hal_arm
 
 	// TODO: calculate control register content out of frequency
 
-	// timer frequency = clk/256 * 0x400
-	//rpiArmTimer->Load = 0x4000;
+	// timer frequency = systemClk / prescaler * load
 	rpiArmTimer->Load = Load;
 
 	// setup control register
 	switch ( Width )
 	{
 	case HAL_ARMTIMER_COUNTERWIDTH_16:
-		Control_Buffer |= HAL_ARMTIMER_CTRL_WIDTHBIT16;
+		Control_Buffer &= ~HAL_ARMTIMER_CTRL_WIDTH;
 		break;
 	case HAL_ARMTIMER_COUNTERWIDTH_23:
-		Control_Buffer |= HAL_ARMTIMER_CTRL_WIDTHBIT23;
+		Control_Buffer |= HAL_ARMTIMER_CTRL_WIDTH;
 		break;
 	}
+
+	Control_Buffer &= ~HAL_ARMTIMER_CTRL_PRESCALE;
 	switch ( Prescale )
 	{
 	case HAL_ARMTIMER_PRESCALE_1:
-		Control_Buffer |= HAL_ARMTIMER_CTRL_PRESCALE1;
+	Control_Buffer |= HAL_ARMTIMER_CTRL_PRESCALE1;
 		break;
 	case HAL_ARMTIMER_PRESCALE_16:
 		Control_Buffer |= HAL_ARMTIMER_CTRL_PRESCALE16;
@@ -74,10 +73,6 @@ hal_error_status_t hal_armTimer_Init( hal_armTimer_counterWidth_r Width, hal_arm
 
 	// write to hardware register
 	rpiArmTimer->Control = Control_Buffer;
-			/*HAL_ARMTIMER_CTRL_WIDTHBIT23 |
-			HAL_ARMTIMER_CTRL_ENABLE |
-			HAL_ARMTIMER_CTRL_INTENABLE |
-			HAL_ARMTIMER_CTRL_PRESCALE256;*/
 
 	return HAL_ERROR_NO_ERROR;
 }

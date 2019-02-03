@@ -16,13 +16,13 @@ hal_hwBasic_GetCPSR:
 	mov     pc, lr
 
 
-.globl hal_hwBasic_Put32
-hal_hwBasic_Put32:
+.globl hal_hwBasic_PutMem
+hal_hwBasic_PutMem:
     str r1,[r0]
     bx lr
 
-.globl hal_hwBasic_Get32
-hal_hwBasic_Get32:
+.globl hal_hwBasic_GetMem
+hal_hwBasic_GetMem:
     ldr r0,[r0]
 	bx lr
 

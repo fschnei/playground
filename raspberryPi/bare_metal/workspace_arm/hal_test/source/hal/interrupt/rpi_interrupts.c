@@ -55,7 +55,7 @@ volatile hal_interrupt_regs_t * hal_interrupt_GetRegs( void )
 void Timer_ISR_function(hal_interrupt_source_t Irq, void * pParam)
 {
 	hal_armTimer_GetRegs()->IrqClear = 1;
-	hal_auxiliaries_MiniUartWrite( 'A' );
+	//hal_auxiliaries_MiniUartWrite( 'A' );
 }
 
 
@@ -149,10 +149,10 @@ static void hal_interrupt_isr_handleRange (hal_base_t pending, const hal_base_t 
 		//hal_intParms.Pending = pending;
 
 		// Get index of first set bit:
-		unsigned int bit = 31 - __builtin_clz(pending);	// count leading zeros
+		hal_base_t bit = 31 - __builtin_clz(pending);	// count leading zeros
 
 		// Map to IRQ number:
-		unsigned int irq = base + bit;
+		hal_base_t irq = base + bit;
 
 		// Call interrupt handler, if enabled:
 		if (hal_interrupt_isrArray[irq].pfnHandler)
@@ -193,8 +193,7 @@ void hal_interrupt_isr (void)
 	// clear all remaining interrupt flags -> interrupt with no handler will not rise in series and block cpu
 
 	// debug: clear timer flag:
-
-	hal_armTimer_GetRegs()->IrqClear = 1;
+	//hal_armTimer_GetRegs()->IrqClear = 1;
 
 	hal_armTimer_ClearIrq();
 
@@ -283,7 +282,7 @@ hal_error_status_t hal_interrupt_enableIRQ (const hal_interrupt_source_t Irq)
 		hal_interrupt_regs->EnableIRQs2 = mask;
 		enabled[1] |= mask;
 	}
-	else	// if (Irq < HAL_INTERRUPT_ISR_COUNT)
+	else
 	{
 		hal_interrupt_regs->EnableBasicIRQs = mask;
 		enabled[2] |= mask;
@@ -324,7 +323,7 @@ hal_error_status_t hal_interrupt_DisableIRQ (const hal_interrupt_source_t Irq)
 		hal_interrupt_regs->DisableIRQs2 = mask;
 		enabled[1] &= ~mask;
 	}
-	else	// if ( Irq < HAL_INTERRUPT_ISR_COUNT )
+	else
 	{
 		hal_interrupt_regs->DisableBasicIRQs = mask;
 		enabled[2] &= ~mask;
@@ -343,7 +342,7 @@ hal_error_status_t hal_interrupt_DisableIRQ (const hal_interrupt_source_t Irq)
 
 
 // --------------- Interrupt Vectors -----------------------
-// see .start asm file
+// see _start asm file
 
 
 void __attribute__((interrupt("IRQ"))) interrupt_vector(void)
