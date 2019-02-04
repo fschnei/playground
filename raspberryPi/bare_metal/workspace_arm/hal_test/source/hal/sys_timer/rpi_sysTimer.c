@@ -16,9 +16,9 @@ volatile hal_sysTimer_regs_t * hal_sysTimer_GetRegs( void )
 
 void hal_sysTimer_WaitMicroSeconds( hal_base_t MicroSeconds )
 {
-	hal_v_base_t ts = hal_sysTimer_regs->counter_lo;
+	hal_v_base_t counterValue = hal_sysTimer_regs->counter_lo;
 
-    while( ( hal_sysTimer_regs->counter_lo - ts ) < MicroSeconds )
+    while( ( hal_sysTimer_regs->counter_lo - counterValue ) < MicroSeconds )
     {
         // nop
     }
