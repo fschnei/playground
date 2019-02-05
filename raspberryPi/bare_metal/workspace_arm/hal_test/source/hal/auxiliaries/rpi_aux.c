@@ -108,7 +108,7 @@ void hal_auxiliaries_MiniUartInit( hal_base_t Baud, hal_base_t Bits )
     hal_auxillary_regs->MiniUart_IIR = HAL_AUXILIARIES_MINIUART_IIR_FIFO_CLR;	//0xC6;
 
     // set baud rate
-    hal_auxillary_regs->MiniUart_BAUD = ( HAL_RPI_SYSTEM_FREQUENCY / ( 8 * Baud ) ) - 1;
+    hal_auxillary_regs->MiniUart_BAUD = ( HAL_RPI_CORE_CLOCK_FREQUENCY / ( 8 * Baud ) ) - 1;
 
     // set rx and tx pin to corresponding alternative function
     hal_gpio_SetPinFunction( HAL_GPIO_PIN_14, HAL_GPIO_FUNCSEL_ALT5 );

@@ -14,6 +14,7 @@
 #include "gpio/rpi_gpio.h"
 #include "interrupt/rpi_interrupts.h"
 #include "sys_timer/rpi_sysTimer.h"
+#include "bsc/rpi_bsc.h"
 
 
 void hal_Init(void);

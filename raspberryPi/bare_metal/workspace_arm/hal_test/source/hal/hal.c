@@ -10,8 +10,6 @@
 
 void hal_Init(void)
 {
-
-
 	hal_gpio_SetInput( HAL_GPIO_PIN_5 );
 	//hal_gpio_SetPinFunction( HAL_GPIO_PIN5, HAL_GPIO_FUNC_SEL_INPUT );
 
@@ -22,6 +20,10 @@ void hal_Init(void)
 
 
 	hal_armTimer_Init(HAL_ARMTIMER_COUNTERWIDTH_23, HAL_ARMTIMER_PRESCALE_256, 0x4000);
+
+
+
+	hal_bsc_Init_I2C0( 100000UL );
 
 
 	hal_gpio_EnablePinInterrupt(HAL_GPIO_PIN_5, HAL_GPIO_DETECT_RISING);

@@ -40,22 +40,22 @@ static volatile hal_bsc_regs_t * const hal_bsc1_regs = ( hal_bsc_regs_t * ) ( HA
 static volatile hal_bsc_regs_t * const hal_bsc2_regs = ( hal_bsc_regs_t * ) ( HAL_BSC2_BASE );
 
 // prototypes
-static hal_error_status_t hal_bsc_Init( volatile hal_bsc_regs_t * BscController );
+static hal_error_status_t hal_bsc_Init( volatile hal_bsc_regs_t * BscController, hal_base_t I2CFrequency );
 static hal_error_status_t hal_bsc_WriteTransaction(
 	const uint8_t SlaveAddress,
 	uint8_t * Buffer,
 	uint8_t BufferSize,
 	volatile hal_bsc_regs_t * BscController );
 static hal_error_status_t hal_bsc_ReadTransaction(
-		const uint8_t SlaveAddress,
-		uint8_t * Buffer,
-		uint8_t BufferSize,
-		volatile hal_bsc_regs_t * BscController );
+	const uint8_t SlaveAddress,
+	uint8_t * Buffer,
+	uint8_t BufferSize,
+	volatile hal_bsc_regs_t * BscController );
 
 
 
 // TODO give clock divider or frequency as parameter
-hal_error_status_t hal_bsc_Init_I2C0( void )
+hal_error_status_t hal_bsc_Init_I2C0( hal_base_t I2CFrequency )
 {
 	// activate gpio alternative function for bsc, i2c
 	if ( hal_gpio_SetPinFunction( HAL_GPIO_PIN_0, HAL_GPIO_FUNCSEL_ALT0 ) != HAL_ERROR_NO_ERROR )
@@ -69,7 +69,7 @@ hal_error_status_t hal_bsc_Init_I2C0( void )
 		return HAL_ERROR_GENERAL_ERROR;
 	}
 
-	return hal_bsc_Init( hal_bsc0_regs );
+	return hal_bsc_Init( hal_bsc0_regs, I2CFrequency );
 }
 hal_error_status_t hal_bsc_WriteTransaction_I2C0(
 		const uint8_t SlaveAddress,
@@ -95,9 +95,12 @@ hal_error_status_t hal_bsc_ReadTransaction_I2C0(
 }
 
 
-static hal_error_status_t hal_bsc_Init( volatile hal_bsc_regs_t * BscController )
+static hal_error_status_t hal_bsc_Init( volatile hal_bsc_regs_t * BscController, hal_base_t I2CFrequency )
 {
 	// init given bsc controller
+	// the corresponding gpio pins have to be set to bsc alternative function separately
+
+	hal_base_t clockDivider;
 
 	// clear control register / disable protocol machine, needed bits will be set in following lines
 	BscController->Control = 0;
@@ -114,8 +117,18 @@ static hal_error_status_t hal_bsc_Init( volatile hal_bsc_regs_t * BscController 
 	// clear slave address register
 	BscController->SlaveAddress = 0;
 
+
+	// debug:
+	//clockDivider = BscController->ClockDivider;
+
 	// set frequency
-	BscController->ClockDivider = 0x5DC;		// default value
+	// see https://elinux.org/BCM2835_datasheet_errata
+	// core clock is 250MHz
+	// I2CFrequency = CoreClock / ClockDivider
+	// ClockDivider = CoreClock / I2CFrequency
+	clockDivider = HAL_RPI_CORE_CLOCK_FREQUENCY / I2CFrequency;
+	//clockDivider = 0x5DC;		// default value3
+	BscController->ClockDivider = clockDivider;
 	// delay values ( Number of core clock cycles to wait after the rising/falling edge of SCL before reading the next bit of data )
 	BscController->DataDelay = 0x3030;			// default value
 	// timeout on SCL high ( Number of SCL clock cycles to wait after the rising edge of SCL before deciding that the slave is not responding )
