@@ -34,6 +34,7 @@ typedef struct {
 	hal_reg_r_t	Reserved_C;
 } hal_gpio_regs_t;
 
+// TODO: PIN is not a good name, this can confuse with pin number on p1 header
 typedef enum {
     HAL_GPIO_PIN_0 = 0,
 	HAL_GPIO_PIN_1,

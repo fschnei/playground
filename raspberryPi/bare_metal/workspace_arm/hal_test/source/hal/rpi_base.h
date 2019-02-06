@@ -9,10 +9,10 @@
 // see: https://www.raspberrypi.org/documentation/hardware/raspberrypi/peripheral_addresses.md
 #if defined(RPI_2_VERSION_1_1) || defined(RPI_2_VERSION_1_2)
     #define HAL_RPI_PERIPHERAL_BASE     		0x3F000000UL
-	#define HAL_RPI_CORE_CLOCK_FREQUENCY		250000000		// http://elinux.org/BCM2835_datasheet_errata
+	#define HAL_RPI_CORE_CLOCK_FREQUENCY		250000000UL		// http://elinux.org/BCM2835_datasheet_errata
 #else
     #define HAL_RPI_PERIPHERAL_BASE     		0x20000000UL
-	#define HAL_RPI_CORE_CLOCK_FREQUENCY		250000000		// http://elinux.org/BCM2835_datasheet_errata
+	#define HAL_RPI_CORE_CLOCK_FREQUENCY		250000000UL		// http://elinux.org/BCM2835_datasheet_errata
 #endif
 
 
