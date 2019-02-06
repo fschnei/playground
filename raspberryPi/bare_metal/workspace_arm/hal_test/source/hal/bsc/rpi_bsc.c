@@ -34,10 +34,19 @@
 #define HAL_BSC_STATUS_TRANSFER_ACTIVE		( 1 << 0 )		// 1 = transfer active
 
 
-
+// corresponding possible pins for bsc0 master are
+// GPIO00 ALT0 SDA0, GPIO01 ALT0 SCL0 <- connected to P1 header pins 27 and 28 on raspberry pi
+// pin 27/28 attention: https://www.raspberrypi.org/forums/viewtopic.php?t=169746
+// GPIO28 ALT0 SDA0, GPIO29 ALT0 SCL0 <- not connected to P1 header on raspberry pi
+// GPIO44 ALT1 SDA0, GPIO45 ALT1 SCL0 <- not connected to P1 header on raspberry pi
 static volatile hal_bsc_regs_t * const hal_bsc0_regs = ( hal_bsc_regs_t * ) ( HAL_BSC0_BASE );
+// corresponding possible pins for bsc1 master are
+// GPIO02 ALT0 SDA1, GPIO03 ALT0 SCL1 <- connected to P1 header pins 3 and 5 on raspberry pi
+// GPIO44 ALT2 SDA1, GPIO45 ALT2 SCL1 <- not connected to P1 header on raspberry pi
 static volatile hal_bsc_regs_t * const hal_bsc1_regs = ( hal_bsc_regs_t * ) ( HAL_BSC1_BASE );
-static volatile hal_bsc_regs_t * const hal_bsc2_regs = ( hal_bsc_regs_t * ) ( HAL_BSC2_BASE );
+// there is not SDA2 SCL2 on gpio alternative function table
+// -> not possible to use bsc2 master
+//static volatile hal_bsc_regs_t * const hal_bsc2_regs = ( hal_bsc_regs_t * ) ( HAL_BSC2_BASE );
 
 // prototypes
 static hal_error_status_t hal_bsc_Init( volatile hal_bsc_regs_t * BscController, hal_base_t I2CFrequency );
