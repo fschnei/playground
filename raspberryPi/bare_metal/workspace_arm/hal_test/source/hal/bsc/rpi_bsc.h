@@ -23,27 +23,39 @@ typedef struct{
 } hal_bsc_regs_t;
 
 
+typedef enum {
+	HAL_BSC_ERROR_NO_ERROR = 0,
+	HAL_BSC_ERROR_FIFO_EMPTY,
+	HAL_BSC_ERROR_NO_SLAVE_ACKNOWLEDGE,
+	HAL_BSC_ERROR_TIMEOUT,
+	HAL_BSC_ERROR_TRANSACTION_ALREADY_RUNNING,
+	HAL_BSC_ERROR_MESSAGE_TO_LARGE,
+	HAL_BSC_ERROR_BAD_FREQUENCY,
+	HAL_BSC_ERROR_WHILE_SETTINGUP_GPIO,
+} hal_bsc_error_t;
 
-hal_error_status_t hal_bsc_Init_I2C0( hal_base_t I2CFrequency );
 
-hal_error_status_t hal_bsc_WriteTransaction_I2C0(
+
+hal_bsc_error_t hal_bsc_Init_I2C0( hal_base_t I2CFrequency );
+
+hal_bsc_error_t hal_bsc_WriteTransaction_I2C0(
 		const uint8_t SlaveAddress,
 		uint8_t * Buffer,
 		uint8_t BufferSize );
 
-hal_error_status_t hal_bsc_ReadTransaction_I2C0(
+hal_bsc_error_t hal_bsc_ReadTransaction_I2C0(
 		const uint8_t SlaveAddress,
 		uint8_t * Buffer,
 		uint8_t BufferSize );
 
-hal_error_status_t hal_bsc_Init_I2C1( hal_base_t I2CFrequency );
+hal_bsc_error_t hal_bsc_Init_I2C1( hal_base_t I2CFrequency );
 
-hal_error_status_t hal_bsc_WriteTransaction_I2C1(
+hal_bsc_error_t hal_bsc_WriteTransaction_I2C1(
 		const uint8_t SlaveAddress,
 		uint8_t * Buffer,
 		uint8_t BufferSize );
 
-hal_error_status_t hal_bsc_ReadTransaction_I2C1(
+hal_bsc_error_t hal_bsc_ReadTransaction_I2C1(
 		const uint8_t SlaveAddress,
 		uint8_t * Buffer,
 		uint8_t BufferSize );

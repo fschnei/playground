@@ -6,8 +6,8 @@
 
 void application_main()
 {
-	uint8_t Buffer[16];
-	volatile hal_error_status_t ret;
+	uint8_t Buffer[2];
+	volatile hal_bsc_error_t ret;
 	uint8_t slaveAdr;
 	slaveAdr = 0;
 
@@ -29,7 +29,12 @@ void application_main()
     		ret = 1;
     	}*/
 
-    	ret = hal_bsc_ReadTransaction_I2C1( 0x20, Buffer, 16 );
+    	Buffer[0] = 0xAA;
+    	Buffer[1] = 0xAA;
+    	//ret = hal_bsc_ReadTransaction_I2C1( 0x20, Buffer, 1 );
+    	ret = hal_bsc_WriteTransaction_I2C1( 0x20, Buffer, sizeof(Buffer) );
+
+
 
     	//LED_ON();
     	//RPI_SetGpioLo( RPI_GPIO5 );

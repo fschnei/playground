@@ -49,13 +49,13 @@ static volatile hal_bsc_regs_t * const hal_bsc1_regs = ( hal_bsc_regs_t * ) ( HA
 //static volatile hal_bsc_regs_t * const hal_bsc2_regs = ( hal_bsc_regs_t * ) ( HAL_BSC2_BASE );
 
 // prototypes
-static hal_error_status_t hal_bsc_Init( volatile hal_bsc_regs_t * BscController, hal_base_t I2CFrequency );
-static hal_error_status_t hal_bsc_WriteTransaction(
+static hal_bsc_error_t hal_bsc_Init( volatile hal_bsc_regs_t * BscController, hal_base_t I2CFrequency );
+static hal_bsc_error_t hal_bsc_WriteTransaction(
 	const uint8_t SlaveAddress,
 	uint8_t * Buffer,
 	uint8_t BufferSize,
 	volatile hal_bsc_regs_t * BscController );
-static hal_error_status_t hal_bsc_ReadTransaction(
+static hal_bsc_error_t hal_bsc_ReadTransaction(
 	const uint8_t SlaveAddress,
 	uint8_t * Buffer,
 	uint8_t BufferSize,
@@ -63,23 +63,23 @@ static hal_error_status_t hal_bsc_ReadTransaction(
 
 
 
-hal_error_status_t hal_bsc_Init_I2C0( hal_base_t I2CFrequency )
+hal_bsc_error_t hal_bsc_Init_I2C0( hal_base_t I2CFrequency )
 {
 	// activate gpio alternative function for bsc, i2c
 	if ( hal_gpio_SetPinFunction( HAL_GPIO_PIN_0, HAL_GPIO_FUNCSEL_ALT0 ) != HAL_ERROR_NO_ERROR )
 	{
 		// could not set pin function
-		return HAL_ERROR_GENERAL_ERROR;
+		return HAL_BSC_ERROR_WHILE_SETTINGUP_GPIO;
 	}
 	if ( hal_gpio_SetPinFunction( HAL_GPIO_PIN_1, HAL_GPIO_FUNCSEL_ALT0 ) != HAL_ERROR_NO_ERROR )
 	{
 		// could not set pin function
-		return HAL_ERROR_GENERAL_ERROR;
+		return HAL_BSC_ERROR_WHILE_SETTINGUP_GPIO;
 	}
 
 	return hal_bsc_Init( hal_bsc0_regs, I2CFrequency );
 }
-hal_error_status_t hal_bsc_WriteTransaction_I2C0(
+hal_bsc_error_t hal_bsc_WriteTransaction_I2C0(
 		const uint8_t SlaveAddress,
 		uint8_t * Buffer,
 		uint8_t BufferSize )
@@ -90,7 +90,7 @@ hal_error_status_t hal_bsc_WriteTransaction_I2C0(
 			BufferSize,
 			hal_bsc0_regs);
 }
-hal_error_status_t hal_bsc_ReadTransaction_I2C0(
+hal_bsc_error_t hal_bsc_ReadTransaction_I2C0(
 		const uint8_t SlaveAddress,
 		uint8_t * Buffer,
 		uint8_t BufferSize )
@@ -101,23 +101,24 @@ hal_error_status_t hal_bsc_ReadTransaction_I2C0(
 			BufferSize,
 			hal_bsc0_regs);
 }
-hal_error_status_t hal_bsc_Init_I2C1( hal_base_t I2CFrequency )
+
+hal_bsc_error_t hal_bsc_Init_I2C1( hal_base_t I2CFrequency )
 {
 	// activate gpio alternative function for bsc, i2c
 	if ( hal_gpio_SetPinFunction( HAL_GPIO_PIN_2, HAL_GPIO_FUNCSEL_ALT0 ) != HAL_ERROR_NO_ERROR )
 	{
 		// could not set pin function
-		return HAL_ERROR_GENERAL_ERROR;
+		return HAL_BSC_ERROR_WHILE_SETTINGUP_GPIO;
 	}
 	if ( hal_gpio_SetPinFunction( HAL_GPIO_PIN_3, HAL_GPIO_FUNCSEL_ALT0 ) != HAL_ERROR_NO_ERROR )
 	{
 		// could not set pin function
-		return HAL_ERROR_GENERAL_ERROR;
+		return HAL_BSC_ERROR_WHILE_SETTINGUP_GPIO;
 	}
 
 	return hal_bsc_Init( hal_bsc1_regs, I2CFrequency );
 }
-hal_error_status_t hal_bsc_WriteTransaction_I2C1(
+hal_bsc_error_t hal_bsc_WriteTransaction_I2C1(
 		const uint8_t SlaveAddress,
 		uint8_t * Buffer,
 		uint8_t BufferSize )
@@ -128,7 +129,7 @@ hal_error_status_t hal_bsc_WriteTransaction_I2C1(
 			BufferSize,
 			hal_bsc1_regs);
 }
-hal_error_status_t hal_bsc_ReadTransaction_I2C1(
+hal_bsc_error_t hal_bsc_ReadTransaction_I2C1(
 		const uint8_t SlaveAddress,
 		uint8_t * Buffer,
 		uint8_t BufferSize )
@@ -141,7 +142,7 @@ hal_error_status_t hal_bsc_ReadTransaction_I2C1(
 }
 
 
-static hal_error_status_t hal_bsc_Init( volatile hal_bsc_regs_t * BscController, hal_base_t I2CFrequency )
+static hal_bsc_error_t hal_bsc_Init( volatile hal_bsc_regs_t * BscController, hal_base_t I2CFrequency )
 {
 	// init given bsc controller
 	// the corresponding gpio pins have to be set to bsc alternative function separately
@@ -176,16 +177,16 @@ static hal_error_status_t hal_bsc_Init( volatile hal_bsc_regs_t * BscController,
 	//clockDivider = 0x5DC;		// default value3
 	BscController->ClockDivider = clockDivider;
 	// delay values ( Number of core clock cycles to wait after the rising/falling edge of SCL before reading the next bit of data )
-	BscController->DataDelay = 0x3030;			// default value
+	//BscController->DataDelay = 0x3030;			// default value
 	// timeout on SCL high ( Number of SCL clock cycles to wait after the rising edge of SCL before deciding that the slave is not responding )
-	BscController->ClkStretchTimeout = 0x40;	// default value
+	//BscController->ClkStretchTimeout = 0x40;	// default value
 
 	// enable i2c protocol machine
 	BscController->Control |= HAL_BSC_CONTROL_I2C_ENABLE;
 
-	return HAL_ERROR_NO_ERROR;
+	return HAL_BSC_ERROR_NO_ERROR;
 }
-static hal_error_status_t hal_bsc_WriteTransaction(
+static hal_bsc_error_t hal_bsc_WriteTransaction(
 	const uint8_t SlaveAddress,
 	uint8_t * Buffer,
 	uint8_t BufferSize,
@@ -196,13 +197,13 @@ static hal_error_status_t hal_bsc_WriteTransaction(
 	if ( BufferSize > 16 )
 	{
 		// to much data
-		return HAL_ERROR_GENERAL_ERROR;
+		return HAL_BSC_ERROR_MESSAGE_TO_LARGE;
 	}
 
 	if ( ( BscController->Status & HAL_BSC_STATUS_TRANSFER_ACTIVE ) != 0 )
 	{
 		// transaction already running
-		return HAL_ERROR_GENERAL_ERROR;
+		return HAL_BSC_ERROR_TRANSACTION_ALREADY_RUNNING;
 	}
 
 	// clear BSC & set address
@@ -227,21 +228,21 @@ static hal_error_status_t hal_bsc_WriteTransaction(
 		if ( ( BscController->Status & HAL_BSC_STATUS_CLK_STRETCH_TIMEOUT ) != 0 )
 		{
 			// timeout
-			return HAL_ERROR_GENERAL_ERROR;
+			return HAL_BSC_ERROR_TIMEOUT;
 		}
 		if ((BscController->Status & HAL_BSC_STATUS_ERROR) != 0)
 		{
 			// no slave acknowledge
-			return HAL_ERROR_GENERAL_ERROR;
+			return HAL_BSC_ERROR_NO_SLAVE_ACKNOWLEDGE;
 		}
 	} while ( ( BscController->Status & HAL_BSC_STATUS_TRANSFER_DONE ) == 0 );	// while transfer active
 
 	// clear done flag in status register
 	BscController->Status |= HAL_BSC_STATUS_TRANSFER_DONE;
 
-	return HAL_ERROR_NO_ERROR;
+	return HAL_BSC_ERROR_NO_ERROR;
 }
-static hal_error_status_t hal_bsc_ReadTransaction(
+static hal_bsc_error_t hal_bsc_ReadTransaction(
 		const uint8_t SlaveAddress,
 		uint8_t * Buffer,
 		uint8_t BufferSize,
@@ -253,14 +254,14 @@ static hal_error_status_t hal_bsc_ReadTransaction(
 	if ( BufferSize > 16 )
 	{
 		// bigger than fifo
-		return HAL_ERROR_GENERAL_ERROR;
+		return HAL_BSC_ERROR_MESSAGE_TO_LARGE;
 	}
 
 	// check if a transaction is running
 	if ( ( BscController->Status & HAL_BSC_STATUS_TRANSFER_ACTIVE ) != 0 )
 	{
 		// transaction already running
-		return HAL_ERROR_GENERAL_ERROR;
+		return HAL_BSC_ERROR_TRANSACTION_ALREADY_RUNNING;
 	}
 
 	// clear BSC & set address
@@ -281,13 +282,13 @@ static hal_error_status_t hal_bsc_ReadTransaction(
 		if ( ( BscController->Status & HAL_BSC_STATUS_CLK_STRETCH_TIMEOUT ) != 0 )
 		{
 			// timeout
-			return HAL_ERROR_GENERAL_ERROR;
+			return HAL_BSC_ERROR_TIMEOUT;
 		}
 		// check if slave acknowledged
 		if ( ( BscController->Status & HAL_BSC_STATUS_ERROR ) != 0 )
 		{
 			// no slave acknowledge
-			return HAL_ERROR_GENERAL_ERROR;
+			return HAL_BSC_ERROR_NO_SLAVE_ACKNOWLEDGE;
 		}
 	} while ( ( BscController->Status & HAL_BSC_STATUS_TRANSFER_DONE ) == 0 );	// while transfer active
 
@@ -300,11 +301,11 @@ static hal_error_status_t hal_bsc_ReadTransaction(
 		if ( ( BscController->Status & HAL_BSC_STATUS_RXFIFO_NOTEMPTY ) == 0 )
 		{
 			// fifo is empty
-			return HAL_ERROR_GENERAL_ERROR;
+			return HAL_BSC_ERROR_FIFO_EMPTY;
 		}
 		*Buffer++ = BscController->DataFifo;
 	}
 
-	return 0;
+	return HAL_BSC_ERROR_NO_ERROR;
 }
 
