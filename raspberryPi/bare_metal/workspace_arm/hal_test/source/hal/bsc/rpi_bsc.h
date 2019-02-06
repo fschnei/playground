@@ -36,5 +36,17 @@ hal_error_status_t hal_bsc_ReadTransaction_I2C0(
 		uint8_t * Buffer,
 		uint8_t BufferSize );
 
+hal_error_status_t hal_bsc_Init_I2C1( hal_base_t I2CFrequency );
+
+hal_error_status_t hal_bsc_WriteTransaction_I2C1(
+		const uint8_t SlaveAddress,
+		uint8_t * Buffer,
+		uint8_t BufferSize );
+
+hal_error_status_t hal_bsc_ReadTransaction_I2C1(
+		const uint8_t SlaveAddress,
+		uint8_t * Buffer,
+		uint8_t BufferSize );
+
 
 #endif // RPI_BSC_H_

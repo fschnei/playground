@@ -23,7 +23,7 @@ void hal_Init(void)
 
 
 
-	hal_bsc_Init_I2C0( 100000UL );
+	hal_bsc_Init_I2C1( 100000UL );
 
 
 	hal_gpio_EnablePinInterrupt(HAL_GPIO_PIN_5, HAL_GPIO_DETECT_RISING);

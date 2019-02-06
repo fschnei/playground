@@ -54,7 +54,6 @@ static hal_error_status_t hal_bsc_ReadTransaction(
 
 
 
-// TODO give clock divider or frequency as parameter
 hal_error_status_t hal_bsc_Init_I2C0( hal_base_t I2CFrequency )
 {
 	// activate gpio alternative function for bsc, i2c
@@ -92,6 +91,44 @@ hal_error_status_t hal_bsc_ReadTransaction_I2C0(
 			Buffer,
 			BufferSize,
 			hal_bsc0_regs);
+}
+hal_error_status_t hal_bsc_Init_I2C1( hal_base_t I2CFrequency )
+{
+	// activate gpio alternative function for bsc, i2c
+	if ( hal_gpio_SetPinFunction( HAL_GPIO_PIN_2, HAL_GPIO_FUNCSEL_ALT0 ) != HAL_ERROR_NO_ERROR )
+	{
+		// could not set pin function
+		return HAL_ERROR_GENERAL_ERROR;
+	}
+	if ( hal_gpio_SetPinFunction( HAL_GPIO_PIN_3, HAL_GPIO_FUNCSEL_ALT0 ) != HAL_ERROR_NO_ERROR )
+	{
+		// could not set pin function
+		return HAL_ERROR_GENERAL_ERROR;
+	}
+
+	return hal_bsc_Init( hal_bsc1_regs, I2CFrequency );
+}
+hal_error_status_t hal_bsc_WriteTransaction_I2C1(
+		const uint8_t SlaveAddress,
+		uint8_t * Buffer,
+		uint8_t BufferSize )
+{
+	return hal_bsc_WriteTransaction(
+			SlaveAddress,
+			Buffer,
+			BufferSize,
+			hal_bsc1_regs);
+}
+hal_error_status_t hal_bsc_ReadTransaction_I2C1(
+		const uint8_t SlaveAddress,
+		uint8_t * Buffer,
+		uint8_t BufferSize )
+{
+	return hal_bsc_ReadTransaction(
+			SlaveAddress,
+			Buffer,
+			BufferSize,
+			hal_bsc1_regs);
 }
 
 
