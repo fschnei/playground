@@ -16,6 +16,7 @@
 #include "sys_timer/rpi_sysTimer.h"
 #include "bsc/rpi_bsc.h"
 
+#include "i2cBitbang/i2cBitbang.h"
 
 void hal_Init(void);
 
