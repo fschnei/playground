@@ -1,5 +1,5 @@
 
-#include "rpi_sysTimer.h"
+#include "../sysTimer/rpi_sysTimer.h"
 
 
 #define HAL_SYSTIMER_BASE       ( HAL_RPI_PERIPHERAL_BASE + 0x3000UL )

@@ -6,7 +6,8 @@
  */
 
 #include "i2cBitbang.h"
-#include "../sys_timer/rpi_sysTimer.h"
+
+#include "../sysTimer/rpi_sysTimer.h"
 
 
 // 100kHz => 1/f = 10µs

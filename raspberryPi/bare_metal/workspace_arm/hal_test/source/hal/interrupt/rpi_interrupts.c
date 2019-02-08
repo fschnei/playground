@@ -9,7 +9,7 @@
 
 #include "rpi_interrupts.h"
 
-#include "../arm_timer/rpi_armTimer.h"
+#include "../armTimer/rpi_armTimer.h"
 #include "../auxiliaries/rpi_aux.h"
 #include "../gpio/rpi_gpio.h"
 #include "../hwBasic/rpi_hwBasic.h"
